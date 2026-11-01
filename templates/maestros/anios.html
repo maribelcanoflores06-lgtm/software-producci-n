@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <h2>Años / cierre anual</h2>
+    {% if puede_escribir %}
+    <a class="btn btn-primary" href="{% url 'admin.anios_nueva' %}">Nuevo</a>
+    {% endif %}
+  </div>
+  <p class="hint">Cada movimiento y cada orden pertenecen a un año. Al cerrar, el stock final pasa como saldo inicial del año siguiente.</p>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr><th>Año</th><th>Año de trabajo</th><th>Estado</th><th>Cierre</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for anio in anios %}
+      <tr>
+        <td>{{ anio.anio }}</td>
+        <td>{% if anio.activo %}<span class="chip chip-proc">Activo</span>{% else %}No{% endif %}</td>
+        <td>{% if anio.cerrado %}Cerrado{% else %}Abierto{% endif %}</td>
+        <td>{% if anio.fecha_cierre %}{{ anio.fecha_cierre|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+        <td class="acciones">
+          {% if puede_escribir and not anio.cerrado %}
+            {% if not anio.activo %}
+            <form method="post" action="{% url 'admin.anios_activar' anio.pk %}">
+              {% csrf_token %}
+              <button class="btn" type="submit">Marcar activo</button>
+            </form>
+            {% endif %}
+            <a class="btn" href="{% url 'admin.anios_cerrar' anio.pk %}">Cerrar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No hay años. Use Nuevo para crear el primero.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="panel">
+  <h2>Correlativos</h2>
+  {% if hay_almacenes %}
+  <p class="hint">Nota = CODIGO-AÑO-CORRELATIVO. En cero hasta el primer movimiento de ese almacén y año. La orden usa OP-AÑO-CORRELATIVO.</p>
+  <div class="grid-wrap">
+    <table class="grid">
+      <thead><tr><th>Año</th><th>Almacén</th><th>Última nota</th></tr></thead>
+      <tbody>
+        {% for fila in correlativos %}
+        <tr>
+          <td>{{ fila.anio }}</td>
+          <td>{{ fila.almacen }}</td>
+          <td class="num">{{ fila.ultimo }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid-wrap" style="margin-top:10px">
+    <table class="grid">
+      <thead><tr><th>Año</th><th>Última OP</th></tr></thead>
+      <tbody>
+        {% for anio, ultimo in ops %}
+        <tr><td>{{ anio }}</td><td class="num">{{ ultimo }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="hint">Cuando existan almacenes, aquí verá el correlativo de notas. Arranca en cero hasta el primer movimiento.</p>
+  {% endif %}
+</div>
+{% endblock %}

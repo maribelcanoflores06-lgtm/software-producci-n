@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}No encontrado · Software de Producción{% endblock %}
+{% block breadcrumb %}Acceso / No encontrado{% endblock %}
+{% block content %}
+<div class="panel">
+  <h2>Página no encontrada</h2>
+  <p>Esa dirección no corresponde a una pantalla del prototipo.</p>
+  {% if user.is_authenticated %}
+  <a class="btn" href="{% url 'home' %}">Volver al menú</a>
+  {% else %}
+  <a class="btn btn-primary" href="{% url 'login' %}">Ingresar</a>
+  {% endif %}
+</div>
+{% endblock %}

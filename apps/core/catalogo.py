@@ -1,0 +1,325 @@
+"""Catálogo fijo de pantallas y datos de la demo.
+
+La adenda agrega `admin.saldo_inicial`, que no estaba en la tabla §7.1.
+"""
+
+PANTALLAS = [
+    {
+        'codigo': 'admin.usuarios',
+        'nombre': 'Usuarios',
+        'modulo': 'Admin',
+        'icono': '👤',
+        'path': 'sistema/usuarios/',
+        'fase': 1,
+        'desc': 'Altas, rol y acceso de cada persona.',
+    },
+    {
+        'codigo': 'admin.roles',
+        'nombre': 'Roles',
+        'modulo': 'Admin',
+        'icono': '⚙',
+        'path': 'sistema/roles/',
+        'fase': 1,
+        'desc': 'Códigos de rol del taller.',
+    },
+    {
+        'codigo': 'admin.rol_pantallas',
+        'nombre': 'Rol ↔ pantallas',
+        'modulo': 'Admin',
+        'icono': '☑',
+        'path': 'sistema/permisos/',
+        'fase': 1,
+        'desc': 'Qué pantallas usa cada rol.',
+    },
+    {
+        'codigo': 'admin.anios',
+        'nombre': 'Años / cierre anual',
+        'modulo': 'Admin',
+        'icono': '📅',
+        'path': 'sistema/anios/',
+        'fase': 1,
+        'desc': 'Año de trabajo, correlativos y cierre.',
+    },
+    {
+        'codigo': 'admin.saldo_inicial',
+        'nombre': 'Saldo inicial',
+        'modulo': 'Admin',
+        'icono': '📒',
+        'path': 'sistema/saldo-inicial/',
+        'fase': 1,
+        'desc': 'Apertura de stock valorizado por año y almacén.',
+    },
+    {
+        'codigo': 'mae.articulos',
+        'nombre': 'Artículos',
+        'modulo': 'Maestros',
+        'icono': '🧵',
+        'path': 'maestros/articulos/',
+        'fase': 1,
+        'desc': 'Códigos, tipo de material y unidad.',
+    },
+    {
+        'codigo': 'mae.recetas',
+        'nombre': 'Recetas (BOM)',
+        'modulo': 'Maestros',
+        'icono': '📋',
+        'path': 'maestros/recetas/',
+        'fase': 1,
+        'desc': 'Lista de materiales por lote base.',
+    },
+    {
+        'codigo': 'mae.clientes',
+        'nombre': 'Clientes',
+        'modulo': 'Maestros',
+        'icono': '🏢',
+        'path': 'maestros/clientes/',
+        'fase': 1,
+        'desc': 'Quienes encargan la producción.',
+    },
+    {
+        'codigo': 'mae.proveedores',
+        'nombre': 'Proveedores',
+        'modulo': 'Maestros',
+        'icono': '🚚',
+        'path': 'maestros/proveedores/',
+        'fase': 1,
+        'desc': 'Quienes abastecen el almacén.',
+    },
+    {
+        'codigo': 'mae.trabajadores',
+        'nombre': 'Trabajadores',
+        'modulo': 'Maestros',
+        'icono': '👷',
+        'path': 'maestros/trabajadores/',
+        'fase': 1,
+        'desc': 'Catálogo de personas del taller.',
+    },
+    {
+        'codigo': 'mae.almacenes',
+        'nombre': 'Almacenes',
+        'modulo': 'Maestros',
+        'icono': '🏬',
+        'path': 'maestros/almacenes/',
+        'fase': 1,
+        'desc': 'Incluye almacenes marcados como proceso.',
+    },
+    {
+        'codigo': 'mae.procesos',
+        'nombre': 'Procesos',
+        'modulo': 'Maestros',
+        'icono': '🔄',
+        'path': 'maestros/procesos/',
+        'fase': 1,
+        'desc': 'Tejido, teñido, corte y los demás pasos.',
+    },
+    {
+        'codigo': 'mae.rutas',
+        'nombre': 'Rutas',
+        'modulo': 'Maestros',
+        'icono': '🗺',
+        'path': 'maestros/rutas/',
+        'fase': 1,
+        'desc': 'Secuencia de procesos, independiente del producto.',
+    },
+    {
+        'codigo': 'alm.ingreso',
+        'nombre': 'Ingreso',
+        'modulo': 'Almacén',
+        'icono': '↓',
+        'path': 'almacen/ingreso/',
+        'fase': 3,
+        'placeholder': True,
+        'desc': 'Compra nacional, importación, muestras u otros.',
+    },
+    {
+        'codigo': 'alm.salida',
+        'nombre': 'Salida',
+        'modulo': 'Almacén',
+        'icono': '↑',
+        'path': 'almacen/salida/',
+        'fase': 3,
+        'placeholder': True,
+        'desc': 'Salida de un almacén normal.',
+    },
+    {
+        'codigo': 'alm.transferencia',
+        'nombre': 'Transferencia',
+        'modulo': 'Almacén',
+        'icono': '⇄',
+        'path': 'almacen/transferencia/',
+        'fase': 3,
+        'placeholder': True,
+        'desc': 'Entre almacenes que no son de proceso.',
+    },
+    {
+        'codigo': 'alm.salida_prod',
+        'nombre': 'Salida a producción',
+        'modulo': 'Almacén',
+        'icono': '🏭',
+        'path': 'almacen/salida-produccion/',
+        'fase': 4,
+        'placeholder': True,
+        'desc': 'Envío de insumos a un almacén de proceso.',
+    },
+    {
+        'codigo': 'alm.entrada_prod',
+        'nombre': 'Declaración / entrada producción',
+        'modulo': 'Almacén',
+        'icono': '✔',
+        'path': 'almacen/entrada-produccion/',
+        'fase': 4,
+        'placeholder': True,
+        'desc': 'Producto terminado y consumo de insumos.',
+    },
+    {
+        'codigo': 'prod.ordenes',
+        'nombre': 'Órdenes de producción',
+        'modulo': 'Producción',
+        'icono': '📄',
+        'path': 'produccion/ordenes/',
+        'fase': 4,
+        'placeholder': True,
+        'desc': 'Cliente, producto, cantidad y ruta.',
+    },
+    {
+        'codigo': 'prod.carga_costos_fab',
+        'nombre': 'Carga costos fabricación',
+        'modulo': 'Producción',
+        'icono': '💰',
+        'path': 'produccion/costos-fabricacion/',
+        'fase': 5,
+        'placeholder': True,
+        'desc': 'Costo de fabricación por declaración, a fin de mes.',
+    },
+    {
+        'codigo': 'rep.bom_ruta_op',
+        'nombre': 'BOM + hoja de ruta',
+        'modulo': 'Reportes',
+        'icono': '📑',
+        'path': 'reportes/bom-ruta/',
+        'fase': 4,
+        'placeholder': True,
+        'desc': 'Materiales escalados y procesos de una orden.',
+    },
+    {
+        'codigo': 'rep.stock',
+        'nombre': 'Stock',
+        'modulo': 'Reportes',
+        'icono': '📦',
+        'path': 'reportes/stock/',
+        'fase': 3,
+        'placeholder': True,
+        'desc': 'Existencia valorizada y última nota.',
+    },
+    {
+        'codigo': 'rep.kardex',
+        'nombre': 'Kardex',
+        'modulo': 'Reportes',
+        'icono': '📊',
+        'path': 'reportes/kardex/',
+        'fase': 3,
+        'placeholder': True,
+        'desc': 'Movimientos y promedio ponderado.',
+    },
+]
+
+PANTALLAS_POR_CODIGO = {item['codigo']: item for item in PANTALLAS}
+
+# Lectura de artículos y almacenes: el almacenero consulta maestros
+# y registra movimientos. El resto de mae.* queda fuera de su rol.
+PERMISOS_POR_ROL = {
+    'ADMIN': {item['codigo']: True for item in PANTALLAS},
+    'ALMACENERO': {
+        'mae.articulos': False,
+        'mae.almacenes': False,
+        'alm.ingreso': True,
+        'alm.salida': True,
+        'alm.transferencia': True,
+        'alm.salida_prod': True,
+        'alm.entrada_prod': True,
+        'rep.stock': False,
+        'rep.kardex': False,
+    },
+    'JEFE_PRODUCCION': {
+        'mae.recetas': True,
+        'mae.rutas': True,
+        'mae.procesos': True,
+        'mae.clientes': True,
+        'mae.articulos': True,
+        'prod.ordenes': True,
+        'prod.carga_costos_fab': True,
+        'alm.salida_prod': True,
+        'alm.entrada_prod': True,
+        'rep.bom_ruta_op': False,
+        'rep.stock': False,
+        'rep.kardex': False,
+    },
+    'CONSULTA': {
+        'rep.bom_ruta_op': False,
+        'rep.stock': False,
+        'rep.kardex': False,
+    },
+}
+
+ROLES_DEMO = [
+    ('ADMIN', 'Admin'),
+    ('ALMACENERO', 'Almacenero'),
+    ('JEFE_PRODUCCION', 'Jefe de producción'),
+    ('CONSULTA', 'Consulta'),
+]
+
+USUARIOS_DEMO = [
+    {
+        'username': 'maribel',
+        'password': 'demo-admin',
+        'nombres': 'Maribel Cano',
+        'rol': 'ADMIN',
+        'email': 'maribel@ejemplo.local',
+    },
+    {
+        'username': 'almacenero',
+        'password': 'demo-alm',
+        'nombres': 'Usuario almacén',
+        'rol': 'ALMACENERO',
+        'email': 'almacen@ejemplo.local',
+    },
+    {
+        'username': 'jefeprod',
+        'password': 'demo-prod',
+        'nombres': 'Usuario producción',
+        'rol': 'JEFE_PRODUCCION',
+        'email': 'produccion@ejemplo.local',
+    },
+    {
+        'username': 'consulta',
+        'password': 'demo-consulta',
+        'nombres': 'Usuario consulta',
+        'rol': 'CONSULTA',
+        'email': 'consulta@ejemplo.local',
+    },
+]
+
+USUARIOS_DEMO_USERNAME = {item['username'] for item in USUARIOS_DEMO}
+
+TIPOS_MATERIAL = [
+    ('MP', 'Materia prima'),
+    ('AUX', 'Materiales auxiliares'),
+    ('REP', 'Repuestos y suministros'),
+    ('ENV', 'Envases y embalajes'),
+    ('DESP', 'Desperdicios'),
+    ('PT', 'Producto terminado'),
+]
+
+CODIGOS_EJEMPLO = {
+    'ALM01', 'ALM02', 'ALM03', 'PROC01',
+    'MP-HIL-20/1', 'MP-TEL-JER', 'AUX-BOT-14', 'ENV-BOL-P', 'PT-POL-PIQ-B',
+    'CLI-001', 'PROV-001', 'TR-001',
+    'TEJ', 'TEN', 'COR', 'COS', 'ACA',
+    'RUTA-POLO-01',
+}
+
+PANTALLAS_ADMIN_FIJAS = ('admin.usuarios', 'admin.roles', 'admin.rol_pantallas')
+
+
+def path_de(codigo):
+    return PANTALLAS_POR_CODIGO[codigo]['path']

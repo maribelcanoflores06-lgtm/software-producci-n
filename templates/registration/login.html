@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar · Software de Producción</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div id="screen-login">
+    <form class="login-card" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <h1>Software de Producción</h1>
+      <div class="sub">Prototipo local · Demo cliente textil</div>
+      {% if form.non_field_errors %}
+      <div class="msg msg-error">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% if sin_usuarios %}
+      <div class="msg msg-error">Todavía no hay usuarios. En la carpeta del proyecto ejecute <strong>python manage.py seed_demo</strong>.</div>
+      {% endif %}
+      <label for="{{ form.username.id_for_label }}">Usuario</label>
+      {{ form.username }}
+      {{ form.username.errors }}
+      <label for="{{ form.password.id_for_label }}">Contraseña</label>
+      {{ form.password }}
+      {{ form.password.errors }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn-login" type="submit">Ingresar</button>
+      <div class="ejemplo">
+        Datos de ejemplo <span class="badge-ej">EJEMPLO</span><br>
+        Contraseñas solo para esta laptop.
+        <ul>
+          {% for item in usuarios_demo %}
+          <li><strong>{{ item.username }}</strong> · {{ item.password }} · {{ item.rol }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

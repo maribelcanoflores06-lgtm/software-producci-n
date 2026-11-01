@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% if pantalla_actual %}{{ pantalla_actual.nombre }} · {% endif %}Software de Producción{% endblock %}</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div id="app" class="open">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="{% url 'home' %}">
+        Producción <span class="badge-ej">DEMO</span>
+        <small>Textil · local</small>
+      </a>
+      <button type="button" class="menu-close" onclick="document.getElementById('sidebar').classList.remove('open')">Cerrar menú</button>
+      <nav class="nav">
+        {% if user.is_authenticated %}
+        <div class="nav-group">
+          <div class="nav-group-title">Inicio</div>
+          <a href="{% url 'home' %}" class="{% if not pantalla_actual %}active{% endif %}"><span class="ico">⌂</span> Menú principal</a>
+        </div>
+        {% for grupo in menu_grupos %}
+        <div class="nav-group">
+          <div class="nav-group-title">{{ grupo.modulo }}</div>
+          {% for item in grupo.items %}
+          <a href="{% url item.codigo %}" class="{% if pantalla_actual and pantalla_actual.codigo == item.codigo %}active{% endif %}">
+            <span class="ico">{{ item.icono }}</span> {{ item.nombre }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+        {% endif %}
+      </nav>
+      {% if user.is_authenticated %}
+      <div class="userbox">
+        <strong>{{ user.nombres|default:user.username }}</strong>
+        Rol: {{ user.rol.nombre }}
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">Salir</button>
+        </form>
+      </div>
+      {% endif %}
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div class="crumb">
+          <button type="button" class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menú</button>
+          {% block breadcrumb %}
+            {% if pantalla_actual %}{{ pantalla_actual.modulo }} / {{ pantalla_actual.nombre }}{% else %}Inicio / Menú principal{% endif %}
+          {% endblock %}
+        </div>
+        <div class="meta">{% now "d/m/Y" %} · América/Lima{% if anio_trabajo %} · Año {{ anio_trabajo.anio }}{% endif %}</div>
+      </div>
+      <div class="content">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="msg msg-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

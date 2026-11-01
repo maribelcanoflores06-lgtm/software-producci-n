@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Admin / Cerrar {{ anio.anio }}{% endblock %}
+{% block content %}
+<div class="panel">
+  <h2>Cerrar {{ anio.anio }}</h2>
+  {% if anio.cerrado %}
+  <p>Este año ya está cerrado.</p>
+  <a class="btn" href="{% url 'admin.anios' %}">Volver</a>
+  {% else %}
+  <p>El stock final de {{ anio.anio }} pasa como saldo inicial de {{ siguiente }}. Hay {{ n_saldos }} existencia(s) con cantidad o valor.</p>
+  <p class="hint">{{ anio.anio }} queda cerrado y no admite movimientos nuevos. {{ siguiente }} pasa a ser el año de trabajo si no hay otro activo.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="btns">
+      <button class="btn btn-primary" type="submit">Confirmar cierre</button>
+      <a class="btn" href="{% url 'admin.anios' %}">Cancelar</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+<div class="form-row">
+  {% for field in form %}
+  <div class="field {% if field.name == 'descripcion' or field.name == 'razon_social' or field.name == 'direccion' or field.name == 'nombres' or field.name == 'email' or field.name == 'nombre' %}grow{% endif %}">
+    {% if field.field.widget.input_type == 'checkbox' %}
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% else %}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+    {% endif %}
+    {% if field.help_text %}<span class="hint">{{ field.help_text }}</span>{% endif %}
+    {% if field.errors %}<span class="err">{{ field.errors|striptags }}</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>

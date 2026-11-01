@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Producción — Mockups (referencia visual)</title>
+<style>
+  :root {
+    --sidebar-bg: #2c2c2c;
+    --sidebar-hover: #3d3d3d;
+    --sidebar-active: #714B67;
+    --topbar-bg: #714B67;
+    --bg: #f0f0f0;
+    --panel: #ffffff;
+    --border: #c0c0c0;
+    --border-dark: #808080;
+    --label: #222;
+    --muted: #666;
+    --accent: #714B67;
+    --btn: #e8e8e8;
+    --btn-primary: #714B67;
+    --grid-header: #d9d9d9;
+    --ok: #2e7d32;
+    --warn: #e65100;
+    --font: "Segoe UI", Tahoma, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); font-size: 13px; color: var(--label); background: var(--bg); }
+  button, input, select, textarea { font-family: inherit; font-size: 12px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ===== LOGIN ===== */
+  #screen-login {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #2c2c2c 0%, #714B67 100%);
+  }
+  .login-card {
+    background: #fff; width: 360px; padding: 32px 28px; border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  }
+  .login-card h1 { font-size: 18px; margin-bottom: 4px; color: var(--accent); }
+  .login-card .sub { color: var(--muted); margin-bottom: 20px; font-size: 12px; }
+  .login-card label { display: block; margin: 10px 0 4px; font-weight: 600; }
+  .login-card input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 3px; }
+  .login-card .btn-login {
+    margin-top: 18px; width: 100%; padding: 10px; background: var(--btn-primary); color: #fff;
+    border: none; border-radius: 3px; font-weight: 600; cursor: pointer;
+  }
+  .login-card .btn-login:hover { background: #5a3b53; }
+  .login-card .ejemplo { margin-top: 14px; font-size: 11px; color: var(--muted); background: #f7f7f7; padding: 8px; border-radius: 3px; }
+  .badge-ej { display: inline-block; background: #fff3e0; color: var(--warn); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 2px; margin-left: 4px; }
+
+  /* ===== APP SHELL ===== */
+  #app { display: none; height: 100vh; }
+  #app.open { display: flex; }
+  .sidebar {
+    width: 220px; background: var(--sidebar-bg); color: #eee; display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .sidebar .brand {
+    padding: 14px 16px; font-weight: 700; font-size: 14px; border-bottom: 1px solid #444;
+    background: #1f1f1f;
+  }
+  .sidebar .brand small { display: block; font-weight: 400; color: #aaa; font-size: 11px; margin-top: 2px; }
+  .nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .nav-group { margin-top: 10px; }
+  .nav-group-title {
+    padding: 4px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #888; font-weight: 700;
+  }
+  .nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 16px; color: #ddd; cursor: pointer;
+  }
+  .nav a:hover { background: var(--sidebar-hover); }
+  .nav a.active { background: var(--sidebar-active); color: #fff; }
+  .nav a .ico { width: 18px; text-align: center; opacity: .85; }
+  .sidebar .userbox {
+    padding: 10px 14px; border-top: 1px solid #444; font-size: 11px; background: #1f1f1f;
+  }
+  .sidebar .userbox strong { display: block; }
+  .sidebar .userbox button {
+    margin-top: 6px; background: transparent; border: 1px solid #666; color: #ccc; padding: 3px 8px; cursor: pointer; border-radius: 2px;
+  }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    background: var(--topbar-bg); color: #fff; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .topbar .crumb { font-size: 13px; font-weight: 600; }
+  .topbar .meta { font-size: 11px; opacity: .9; }
+  .content { flex: 1; overflow: auto; padding: 12px 14px; }
+
+  /* ===== PANELS / FORMS ===== */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .panel h2 { font-size: 14px; margin-bottom: 8px; color: var(--accent); border-bottom: 1px solid #eee; padding-bottom: 4px; }
+  .hint { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .form-row {
+    display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 6px;
+  }
+  .field { display: flex; align-items: center; gap: 6px; }
+  .field label { font-weight: 600; white-space: nowrap; min-width: fit-content; }
+  .field input, .field select, .field textarea {
+    border: 1px solid var(--border-dark); padding: 3px 6px; background: #fff; min-width: 0;
+  }
+  .field input[readonly], .field select:disabled { background: #f5f5f5; color: #444; }
+  .field.grow { flex: 1; min-width: 200px; }
+  .field.grow input, .field.grow select { flex: 1; width: 100%; }
+  .w80 { width: 80px; } .w100 { width: 100px; } .w120 { width: 120px; }
+  .w160 { width: 160px; } .w200 { width: 200px; } .w240 { width: 240px; } .w280 { width: 280px; }
+  .auto-badge {
+    display: inline-block; background: #e3f2fd; border: 1px solid #90caf9; color: #1565c0;
+    padding: 2px 8px; font-weight: 700; font-size: 11px;
+  }
+
+  /* Grid */
+  .grid-wrap { border: 1px solid var(--border-dark); overflow: auto; background: #fff; }
+  table.grid { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.grid th {
+    background: var(--grid-header); border: 1px solid var(--border); padding: 4px 6px; text-align: left; font-weight: 700; white-space: nowrap;
+  }
+  table.grid td {
+    border: 1px solid #ddd; padding: 3px 5px; white-space: nowrap;
+  }
+  table.grid tr:nth-child(even) { background: #fafafa; }
+  table.grid tr.selected { background: #e8f0fe; }
+  table.grid input, table.grid select {
+    width: 100%; border: 1px solid transparent; padding: 2px 4px; background: transparent;
+  }
+  table.grid input:focus, table.grid select:focus { border-color: var(--accent); background: #fff; outline: none; }
+  table.grid .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .row-star { color: #888; width: 18px; text-align: center; }
+
+  .form-footer {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+  }
+  .registro { font-size: 12px; color: var(--muted); }
+  .registro strong { color: var(--label); }
+  .btns { display: flex; gap: 8px; }
+  .btn {
+    padding: 6px 18px; border: 1px solid var(--border-dark); background: var(--btn); cursor: pointer; border-radius: 2px;
+  }
+  .btn:hover { background: #ddd; }
+  .btn-primary { background: var(--btn-primary); color: #fff; border-color: #5a3b53; }
+  .btn-primary:hover { background: #5a3b53; }
+  .btn-ghost { background: #fff; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--accent); margin-bottom: 0; }
+  .tab {
+    padding: 7px 16px; background: #e0e0e0; border: 1px solid var(--border); border-bottom: none;
+    cursor: pointer; font-weight: 600; margin-right: 2px; border-radius: 3px 3px 0 0;
+  }
+  .tab.active { background: #fff; color: var(--accent); border-color: var(--accent); border-bottom: 2px solid #fff; margin-bottom: -2px; }
+  .tab-panel { display: none; border: 1px solid var(--border); border-top: none; padding: 8px; background: #fff; }
+  .tab-panel.active { display: block; }
+
+  .totals {
+    display: flex; gap: 16px; justify-content: flex-end; padding: 8px; background: #f5f5f5; border: 1px solid var(--border); border-top: none;
+    font-size: 12px;
+  }
+  .totals span { font-weight: 600; }
+  .totals .val { font-variant-numeric: tabular-nums; min-width: 70px; display: inline-block; text-align: right; }
+
+  /* Cards home */
+  .dash { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .dash-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 16px; cursor: pointer;
+    transition: box-shadow .15s;
+  }
+  .dash-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.12); border-color: var(--accent); }
+  .dash-card .ico { font-size: 22px; margin-bottom: 6px; }
+  .dash-card h3 { font-size: 13px; margin-bottom: 4px; }
+  .dash-card p { font-size: 11px; color: var(--muted); }
+
+  .modo-box {
+    background: #fff8e1; border: 1px solid #ffe082; padding: 10px; margin-bottom: 8px; border-radius: 3px;
+  }
+  .modo-box label { margin-right: 16px; font-weight: 600; cursor: pointer; }
+  .chip {
+    display: inline-block; background: #e8eaf6; color: #283593; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600;
+  }
+  .chip-proc { background: #e8f5e9; color: #2e7d32; }
+  .chip-ej { background: #fff3e0; color: #e65100; }
+
+  .checklist { border: 1px solid var(--border); max-height: 180px; overflow: auto; }
+  .checklist label { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+  .checklist label:hover { background: #f5f5f5; }
+  .checklist input[type=number] { width: 80px; margin-left: auto; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .banner-ej {
+    background: #fff3e0; border: 1px solid #ffcc80; color: #e65100; padding: 6px 10px; margin-bottom: 10px;
+    font-size: 11px; border-radius: 2px;
+  }
+
+  /* Roles matrix */
+  .matrix th, .matrix td { text-align: center; padding: 4px 6px; }
+  .matrix th.mod { text-align: left; background: #eee; }
+  .matrix td:first-child { text-align: left; font-weight: 600; }
+
+  @media print {
+    .sidebar, .topbar, .btns { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="screen-login">
+  <div class="login-card">
+    <h1>Software de Producción</h1>
+    <div class="sub">Prototipo local · Demo cliente</div>
+    <label>Usuario</label>
+    <input id="login-user" type="text" value="maribel" />
+    <label>Contraseña</label>
+    <input id="login-pass" type="password" value="••••••••" />
+    <button class="btn-login" onclick="entrar()">Ingresar</button>
+    <div class="ejemplo">Datos de ejemplo <span class="badge-ej">EJEMPLO</span><br>
+      Usuario: <strong>maribel</strong> · Rol: Admin<br>
+      También: almacenero / jefeprod / consulta
+    </div>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">Producción<span class="badge-ej">DEMO</span>
+      <small>Textil · local</small>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-group">
+        <div class="nav-group-title">Inicio</div>
+        <a data-screen="home" class="active" onclick="go(event,'home')"><span class="ico">⌂</span> Menú principal</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Admin</div>
+        <a data-screen="roles" onclick="go(event,'roles')"><span class="ico">⚙</span> Roles y pantallas</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Maestros</div>
+        <a data-screen="receta" onclick="go(event,'receta')"><span class="ico">📋</span> Recetas (BOM)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Almacén</div>
+        <a data-screen="ingreso" onclick="go(event,'ingreso')"><span class="ico">↓</span> Ingreso</a>
+        <a data-screen="salida" onclick="go(event,'salida')"><span class="ico">↑</span> Salida</a>
+        <a data-screen="transferencia" onclick="go(event,'transferencia')"><span class="ico">⇄</span> Transferencia</a>
+        <a data-screen="salida-prod" onclick="go(event,'salida-prod')"><span class="ico">🏭</span> Salida a producción</a>
+        <a data-screen="declaracion" onclick="go(event,'declaracion')"><span class="ico">✔</span> Declaración producción</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Producción</div>
+        <a data-screen="op" onclick="go(event,'op')"><span class="ico">📄</span> Orden de producción</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Reportes</div>
+        <a data-screen="stock" onclick="go(event,'stock')"><span class="ico">📦</span> Stock almacén</a>
+        <a data-screen="kardex" onclick="go(event,'kardex')"><span class="ico">📊</span> Kardex</a>
+      </div>
+    </nav>
+    <div class="userbox">
+      <strong>Maribel Cano</strong>
+      Rol: Admin
+      <button onclick="salir()">Salir</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">Inicio / Menú principal</div>
+      <div class="meta">01/11/2026 · América/Lima</div>
+    </div>
+    <div class="content">
+
+      <!-- HOME -->
+      <div class="screen active" id="s-home">
+        <div class="banner-ej">Mockup estático · Datos textiles marcados como <strong>EJEMPLO</strong> · Navegación entre pantallas para la referencia visual</div>
+        <div class="panel">
+          <h2>Menú principal</h2>
+          <p class="hint">Accesos filtrados por rol (aquí: Admin ve todo). En runtime el menú lateral solo muestra pantallas del rol.</p>
+          <div class="dash">
+            <div class="dash-card" onclick="go(null,'ingreso')"><div class="ico">↓</div><h3>Ingreso a almacén</h3><p>Compra nacional, importación, muestras…</p></div>
+            <div class="dash-card" onclick="go(null,'salida')"><div class="ico">↑</div><h3>Salida</h3><p>Salidas de almacén normal</p></div>
+            <div class="dash-card" onclick="go(null,'transferencia')"><div class="ico">⇄</div><h3>Transferencia</h3><p>Entre almacenes normales</p></div>
+            <div class="dash-card" onclick="go(null,'salida-prod')"><div class="ico">🏭</div><h3>Salida a producción</h3><p>Envío a almacén en proceso + OP</p></div>
+            <div class="dash-card" onclick="go(null,'declaracion')"><div class="ico">✔</div><h3>Declaración de producción</h3><p>PT + consumo % o manual</p></div>
+            <div class="dash-card" onclick="go(null,'op')"><div class="ico">📄</div><h3>Orden de producción</h3><p>Cliente, PT, cantidad, ruta</p></div>
+            <div class="dash-card" onclick="go(null,'receta')"><div class="ico">📋</div><h3>Receta / BOM</h3><p>Lista de materiales por lote base</p></div>
+            <div class="dash-card" onclick="go(null,'stock')"><div class="ico">📦</div><h3>Stock</h3><p>Con nº de transacción</p></div>
+            <div class="dash-card" onclick="go(null,'kardex')"><div class="ico">📊</div><h3>Kardex</h3><p>Promedio ponderado valorizado</p></div>
+            <div class="dash-card" onclick="go(null,'roles')"><div class="ico">⚙</div><h3>Roles y pantallas</h3><p>Permisos por rol</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INGRESO -->
+      <div class="screen" id="s-ingreso">
+        <div class="banner-ej">Referencia: cabecera compacta + grilla como sistema actual · Subtipo compra nacional <span class="badge-ej">EJEMPLO</span></div>
+        <div class="panel">
+          <h2>Ingreso a almacén — Compra nacional</h2>
+          <div class="form-row">
+            <div class="field"><label>Almacén</label>
+              <select class="w240"><option>ALM-01 · Almacén de compras</option><option>ALM-02 · Materia prima</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Año</label><input class="w80" value="2026" readonly></div>
+            <div class="field"><label>Mes</label><input class="w120" value="NOVIEMBRE" readonly></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Tipo Operación</label>
+              <select class="w200"><option selected>COMPRA NACIONAL</option><option>IMPORTACIÓN</option><option>MUESTRAS</option><option>OTROS</option></select>
+            </div>
+            <div class="field"><label>Nota N°</label><span class="auto-badge">(AUTO)</span></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Origen</label><input class="w120" value="PROVEEDOR" readonly></div>
+            <div class="field grow"><label>Razón social</label>
+              <select class="w280"><option>20123456789 · Hilos del Sur S.A.C. (ejemplo)</option><option>20987654321 · Tejidos Andes E.I.R.L. (ejemplo)</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Tipo comprobante</label>
+              <select class="w120"><option>FACTURA</option><option selected>OTROS</option><option>BOLETA</option></select>
+            </div>
+            <div class="field"><label>Serie Doc. Ref.</label><input class="w80" value="F001"></div>
+            <div class="field"><label>Número</label><input class="w100" value="00001234"></div>
+            <div class="field"><label>Fecha Doc. Ref.</label><input class="w120" type="date" value="2026-10-28"></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Ingreso hilos y tela — demo textil (ejemplo)"></div>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th></th><th>Código</th><th>Producto</th><th>Lote</th><th>Ubicación</th><th>Stock</th><th>Cant.</th><th>U/M</th>
+                <th>Costo unit. S/</th><th>Kilo Ref</th><th>Und Ref</th><th>Metro Ref</th><th>Obs.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="selected">
+                <td class="row-star">*</td>
+                <td>MP-HIL-20/1</td>
+                <td>Hilo algodón 20/1 crudo <span class="chip-ej">ej.</span></td>
+                <td>L-2026-1101</td>
+                <td>A-01</td>
+                <td class="num">0.000</td>
+                <td class="num">100.000</td>
+                <td>kg</td>
+                <td class="num">2.00</td>
+                <td class="num">100.000</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="row-star"></td>
+                <td>MP-TEL-JER</td>
+                <td>Tela jersey 180 g/m² <span class="chip-ej">ej.</span></td>
+                <td>L-2026-1102</td>
+                <td>A-01</td>
+                <td class="num">0.000</td>
+                <td class="num">250.000</td>
+                <td>m</td>
+                <td class="num">4.50</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">250.000</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="row-star">*</td>
+                <td colspan="12" style="color:#999">— nueva línea —</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>2</strong> de <strong>2</strong></div>
+          <div class="btns">
+            <button class="btn btn-primary">Guardar</button>
+            <button class="btn">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALIDA -->
+      <div class="screen" id="s-salida">
+        <div class="banner-ej">Salida de almacén normal · Costo sale al promedio ponderado vigente</div>
+        <div class="panel">
+          <h2>Salida de almacén</h2>
+          <div class="form-row">
+            <div class="field"><label>Almacén</label>
+              <select class="w240"><option>ALM-01 · Almacén de compras</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Año</label><input class="w80" value="2026" readonly></div>
+            <div class="field"><label>Mes</label><input class="w120" value="NOVIEMBRE" readonly></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Tipo Operación</label>
+              <select class="w240"><option>SALIDA POR DEVOLUCIÓN AL PROVEEDOR</option><option selected>SALIDA OTROS</option></select>
+            </div>
+            <div class="field"><label>Nota N°</label><span class="auto-badge">(AUTO)</span></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Destino</label><input class="w120" value="PROVEEDOR"></div>
+            <div class="field grow"><label>Razón social</label>
+              <select class="w280"><option>20123456789 · Hilos del Sur S.A.C. (ejemplo)</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Tipo comprobante</label><select class="w120"><option>OTROS</option></select></div>
+            <div class="field"><label>Serie</label><input class="w80" value=""></div>
+            <div class="field"><label>Número</label><input class="w100" value=""></div>
+            <div class="field"><label>Fecha Doc. Ref.</label><input class="w120" type="date" value="2026-11-01"></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Devolución parcial hilo defectuoso (ejemplo)"></div>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr><th></th><th>Código</th><th>Producto</th><th>Lote</th><th>Ubicación</th><th>Stock</th><th>Cant.</th><th>U/M</th><th>Kilo Ref</th><th>Und Ref</th><th>Metro Ref</th><th>Obs.</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-star">*</td>
+                <td>MP-HIL-20/1</td>
+                <td>Hilo algodón 20/1 crudo <span class="chip-ej">ej.</span></td>
+                <td>L-2026-1101</td>
+                <td>A-01</td>
+                <td class="num">100.000</td>
+                <td class="num">5.000</td>
+                <td>kg</td>
+                <td class="num">5.000</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td>Defectuoso</td>
+              </tr>
+              <tr><td class="row-star">*</td><td colspan="11" style="color:#999">— nueva línea —</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>1</strong> de <strong>1</strong></div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- TRANSFERENCIA -->
+      <div class="screen" id="s-transferencia">
+        <div class="banner-ej">Solo almacenes normales (es_proceso = false) · Origen ≠ destino</div>
+        <div class="panel">
+          <h2>Transferencia entre almacenes</h2>
+          <div class="form-row">
+            <div class="field"><label>Año</label><input class="w80" value="2026" readonly></div>
+            <div class="field"><label>Mes</label><input class="w120" value="NOVIEMBRE" readonly></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+            <div class="field"><label>Nota N°</label><span class="auto-badge">(AUTO)</span></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Almacén origen</label>
+              <select class="w240"><option>ALM-01 · Almacén de compras</option></select>
+            </div>
+            <div class="field"><label>Almacén destino</label>
+              <select class="w240"><option>ALM-02 · Materia prima</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Pase a almacén de MP para OP (ejemplo)"></div>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr><th></th><th>Código</th><th>Producto</th><th>Lote</th><th>Ubicación</th><th>Stock origen</th><th>Cant.</th><th>U/M</th><th>Obs.</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-star">*</td>
+                <td>MP-HIL-20/1</td>
+                <td>Hilo algodón 20/1 crudo <span class="chip-ej">ej.</span></td>
+                <td>L-2026-1101</td>
+                <td>A-01</td>
+                <td class="num">95.000</td>
+                <td class="num">40.000</td>
+                <td>kg</td>
+                <td></td>
+              </tr>
+              <tr><td class="row-star">*</td><td colspan="8" style="color:#999">— nueva línea —</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>1</strong> de <strong>1</strong></div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- SALIDA A PRODUCCIÓN -->
+      <div class="screen" id="s-salida-prod">
+        <div class="banner-ej">OP obligatoria · Destino = almacén con es_proceso · WIP queda en proceso</div>
+        <div class="panel">
+          <h2>Salida a producción</h2>
+          <div class="form-row">
+            <div class="field"><label>Año</label><input class="w80" value="2026" readonly></div>
+            <div class="field"><label>Mes</label><input class="w120" value="NOVIEMBRE" readonly></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+            <div class="field"><label>Nota N°</label><span class="auto-badge">(AUTO)</span></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Orden de producción</label>
+              <select class="w280">
+                <option>OP-2026-00015 · Polo piqué blanco × 500 und · Cliente Textiles Lima (ejemplo)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Almacén origen</label>
+              <select class="w240"><option>ALM-02 · Materia prima</option></select>
+            </div>
+            <div class="field"><label>Almacén destino</label>
+              <select class="w240"><option>PROC-01 · En proceso tejido <span class="chip chip-proc">proceso</span></option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Envío insumos OP-15 (ejemplo)"></div>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr><th></th><th>Código</th><th>Producto</th><th>Lote</th><th>Ubicación</th><th>Stock</th><th>Cant.</th><th>U/M</th><th>Obs.</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-star">*</td>
+                <td>MP-HIL-20/1</td>
+                <td>Hilo algodón 20/1 crudo <span class="chip-ej">ej.</span></td>
+                <td>L-2026-1101</td>
+                <td>MP-01</td>
+                <td class="num">40.000</td>
+                <td class="num">40.000</td>
+                <td>kg</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="row-star"></td>
+                <td>AUX-BOT-4H</td>
+                <td>Botón 4 huecos 15 mm <span class="chip-ej">ej.</span></td>
+                <td>L-BOT-09</td>
+                <td>MP-02</td>
+                <td class="num">2000</td>
+                <td class="num">500</td>
+                <td>und</td>
+                <td></td>
+              </tr>
+              <tr><td class="row-star">*</td><td colspan="8" style="color:#999">— nueva línea —</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>2</strong> de <strong>2</strong></div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- DECLARACIÓN -->
+      <div class="screen" id="s-declaracion">
+        <div class="banner-ej">Pestañas Productos Obtenidos / Insumos Utilizados · Modo consumo % o manual · Costo fab. = 0 hasta fin de mes</div>
+        <div class="panel">
+          <h2>Declaración de producción (entrada)</h2>
+          <div class="form-row">
+            <div class="field"><label>Almacén destino PT</label>
+              <select class="w240"><option>ALM-03 · Producto terminado</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Año</label><input class="w80" value="2026" readonly></div>
+            <div class="field"><label>Mes</label><input class="w120" value="NOVIEMBRE" readonly></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+            <div class="field"><label>Nota N°</label><span class="auto-badge">(AUTO)</span></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Orden de producción</label>
+              <select class="w280">
+                <option>OP-2026-00015 · Polo piqué blanco × 500 · ABIERTA (ejemplo)</option>
+              </select>
+            </div>
+            <div class="field"><label>Almacén proceso</label>
+              <select class="w200"><option>PROC-01 · En proceso tejido</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Declaración parcial 200 und (ejemplo)"></div>
+          </div>
+
+          <div class="modo-box">
+            <strong>Modo de consumo de insumos</strong><br><br>
+            <label><input type="radio" name="modo" value="pct" checked onchange="toggleModo()"> Porcentaje sobre WIP de la OP
+              <input type="number" id="pct" class="w80" value="50" min="0" max="100"> %</label>
+            <label><input type="radio" name="modo" value="manual" onchange="toggleModo()"> Manual (seleccionar insumos)</label>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab active" onclick="tabDec(event,'prod')">Productos Obtenidos</div>
+          <div class="tab" onclick="tabDec(event,'ins')">Insumos Utilizados</div>
+        </div>
+        <div class="tab-panel active" id="dec-prod">
+          <div class="grid-wrap" style="border:none">
+            <table class="grid">
+              <thead>
+                <tr><th></th><th>Código</th><th>Producto</th><th>Lote</th><th>Ubicación</th><th>Cant.</th><th>U/M</th><th>Kilo Ref</th><th>Und Ref</th><th>Metro Ref</th><th>Obs.</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="row-star">*</td>
+                  <td>PT-POL-PIQ-B</td>
+                  <td>Polo piqué blanco M <span class="chip-ej">ej.</span></td>
+                  <td>LP-OP15-01</td>
+                  <td>PT-01</td>
+                  <td class="num">200.000</td>
+                  <td>und</td>
+                  <td class="num">0</td>
+                  <td class="num">200</td>
+                  <td class="num">0</td>
+                  <td>Parcial 1</td>
+                </tr>
+                <tr><td class="row-star">*</td><td colspan="10" style="color:#999">— nueva línea —</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-panel" id="dec-ins">
+          <div id="modo-pct-view">
+            <p class="hint">Con modo %: el sistema genera consumos = WIP de la OP × porcentaje. Editable antes de guardar.</p>
+            <div class="grid-wrap" style="border:none">
+              <table class="grid">
+                <thead>
+                  <tr><th>Código</th><th>Producto</th><th>WIP disponible</th><th>% </th><th>Cant. consumida</th><th>U/M</th><th>Costo unit.</th><th>Costo total</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>MP-HIL-20/1</td>
+                    <td>Hilo algodón 20/1 <span class="chip-ej">ej.</span></td>
+                    <td class="num">40.000</td>
+                    <td class="num">50</td>
+                    <td class="num">20.000</td>
+                    <td>kg</td>
+                    <td class="num">3.00</td>
+                    <td class="num">60.00</td>
+                  </tr>
+                  <tr>
+                    <td>AUX-BOT-4H</td>
+                    <td>Botón 4 huecos 15 mm <span class="chip-ej">ej.</span></td>
+                    <td class="num">500</td>
+                    <td class="num">50</td>
+                    <td class="num">250</td>
+                    <td>und</td>
+                    <td class="num">0.15</td>
+                    <td class="num">37.50</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div id="modo-manual-view" style="display:none">
+            <p class="hint">Selecciona insumos del WIP de la OP y la cantidad a consumir (≤ disponible).</p>
+            <div class="checklist">
+              <label><input type="checkbox" checked> MP-HIL-20/1 · Hilo algodón 20/1 · disp. 40 kg
+                <input type="number" value="20" step="0.001"> kg</label>
+              <label><input type="checkbox" checked> AUX-BOT-4H · Botón 4 huecos · disp. 500 und
+                <input type="number" value="250"> und</label>
+              <label><input type="checkbox"> ENV-BOL-PE · Bolsa PE 30×40 · disp. 100 und
+                <input type="number" value="0"> und</label>
+            </div>
+          </div>
+        </div>
+        <div class="totals">
+          <div>Cant. PT: <span class="val">200.000</span></div>
+          <div>Costo insumos S/: <span class="val">97.50</span></div>
+          <div>Costo fab. S/: <span class="val">0.00</span> <span class="chip">fin de mes</span></div>
+          <div>Unitario PT S/: <span class="val">0.4875</span></div>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>1</strong> de <strong>1</strong></div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- OP -->
+      <div class="screen" id="s-op">
+        <div class="banner-ej">Ruta elegida al crear (no auto desde PT) · Demo: sin cierre de OP · PT debe tener receta</div>
+        <div class="panel">
+          <h2>Orden de producción</h2>
+          <div class="form-row">
+            <div class="field"><label>N° OP</label><span class="auto-badge">OP-2026-00015 (AUTO)</span></div>
+            <div class="field"><label>F. Registro</label><input class="w120" type="date" value="2026-11-01"></div>
+            <div class="field"><label>Estado</label><input class="w100" value="ABIERTA" readonly></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Cliente</label>
+              <select class="w280"><option>CLI-012 · Textiles Lima S.A.C. (ejemplo)</option><option>CLI-003 · Confecciones Norte (ejemplo)</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Producto terminado</label>
+              <select class="w280"><option>PT-POL-PIQ-B · Polo piqué blanco M (ejemplo)</option></select>
+            </div>
+            <div class="field"><label>Cantidad</label><input class="w100" value="500"></div>
+            <div class="field"><label>U/M</label><input class="w60 w80" value="und" readonly></div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Ruta de procesos</label>
+              <select class="w280"><option>RUT-POLO-STD · Tejido → Corte → Costura → Acabado (ejemplo)</option><option>RUT-TEÑIDO · Tejido → Teñido → Corte → Costura</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field grow"><label>Obs.</label><input value="Pedido cliente Textiles Lima — demo (ejemplo)"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Vista previa — Lista de materiales escalada <span class="badge-ej">EJEMPLO</span></h2>
+          <p class="hint">Receta lote base 100 und → factor 500/100 = 5</p>
+          <div class="grid-wrap">
+            <table class="grid">
+              <thead><tr><th>Código</th><th>Insumo</th><th>Cant. por lote</th><th>Cant. requerida</th><th>U/M</th></tr></thead>
+              <tbody>
+                <tr><td>MP-HIL-20/1</td><td>Hilo algodón 20/1</td><td class="num">8.000</td><td class="num">40.000</td><td>kg</td></tr>
+                <tr><td>AUX-BOT-4H</td><td>Botón 4 huecos 15 mm</td><td class="num">100</td><td class="num">500</td><td>und</td></tr>
+                <tr><td>ENV-BOL-PE</td><td>Bolsa PE 30×40</td><td class="num">100</td><td class="num">500</td><td>und</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Hoja de ruta</h2>
+          <div class="grid-wrap">
+            <table class="grid">
+              <thead><tr><th>Sec.</th><th>Código</th><th>Proceso</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>PRC-TEJ</td><td>Tejido</td></tr>
+                <tr><td>2</td><td>PRC-COR</td><td>Corte</td></tr>
+                <tr><td>3</td><td>PRC-COS</td><td>Costura</td></tr>
+                <tr><td>4</td><td>PRC-ACA</td><td>Acabado / Empaque</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-footer">
+          <div class="registro">OP de ejemplo · Demo sin cierre</div>
+          <div class="btns">
+            <button class="btn btn-primary">Guardar</button>
+            <button class="btn btn-ghost">Ver BOM / Ruta</button>
+            <button class="btn">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECETA -->
+      <div class="screen" id="s-receta">
+        <div class="banner-ej">Un PT = una receta · Cantidades por lote base · Insumos del maestro de artículos</div>
+        <div class="panel">
+          <h2>Receta — Lista de materiales por lote base</h2>
+          <div class="form-row">
+            <div class="field grow"><label>Producto terminado</label>
+              <select class="w280"><option>PT-POL-PIQ-B · Polo piqué blanco M (ejemplo)</option></select>
+            </div>
+            <div class="field"><label>Lote base</label><input class="w100" value="100"></div>
+            <div class="field"><label>U/M</label><input class="w80" value="und" readonly></div>
+            <div class="field"><label>Activo</label><input type="checkbox" checked></div>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead><tr><th></th><th>Código</th><th>Insumo</th><th>Tipo</th><th>Cant. por lote</th><th>U/M</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="row-star">*</td>
+                <td>MP-HIL-20/1</td>
+                <td>Hilo algodón 20/1 crudo <span class="chip-ej">ej.</span></td>
+                <td>Materia prima</td>
+                <td class="num">8.000</td>
+                <td>kg</td>
+                <td><button class="btn" style="padding:2px 8px">Quitar</button></td>
+              </tr>
+              <tr>
+                <td class="row-star"></td>
+                <td>AUX-BOT-4H</td>
+                <td>Botón 4 huecos 15 mm <span class="chip-ej">ej.</span></td>
+                <td>Mat. auxiliares</td>
+                <td class="num">100</td>
+                <td>und</td>
+                <td><button class="btn" style="padding:2px 8px">Quitar</button></td>
+              </tr>
+              <tr>
+                <td class="row-star"></td>
+                <td>ENV-BOL-PE</td>
+                <td>Bolsa PE 30×40 <span class="chip-ej">ej.</span></td>
+                <td>Envases</td>
+                <td class="num">100</td>
+                <td>und</td>
+                <td><button class="btn" style="padding:2px 8px">Quitar</button></td>
+              </tr>
+              <tr><td class="row-star">*</td><td colspan="6"><button class="btn" style="padding:2px 10px">+ Agregar insumo</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">3 insumos</div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- ROLES -->
+      <div class="screen" id="s-roles">
+        <div class="banner-ej">Permisos por rol · El menú lateral se filtra según rol_pantalla</div>
+        <div class="panel">
+          <h2>Roles y pantallas</h2>
+          <div class="form-row">
+            <div class="field"><label>Rol</label>
+              <select class="w200" id="rol-sel">
+                <option>Admin</option>
+                <option>Almacenero</option>
+                <option>JefeProduccion</option>
+                <option>Consulta</option>
+              </select>
+            </div>
+            <div class="field"><label>Código</label><input class="w120" value="ADMIN" readonly></div>
+            <div class="field"><label>Activo</label><input type="checkbox" checked></div>
+          </div>
+          <p class="hint">Marca las pantallas que puede ver/usar este rol. Usuarios heredan el rol asignado.</p>
+          <div class="grid-wrap">
+            <table class="grid matrix">
+              <thead>
+                <tr>
+                  <th>Pantalla</th>
+                  <th>Admin</th><th>Almacenero</th><th>JefeProd</th><th>Consulta</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th class="mod" colspan="5">Admin</th></tr>
+                <tr><td>Usuarios</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+                <tr><td>Roles / Pantallas</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+                <tr><th class="mod" colspan="5">Maestros</th></tr>
+                <tr><td>Artículos / Recetas</td><td>☑</td><td>☐</td><td>☑</td><td>☐</td></tr>
+                <tr><td>Clientes / Proveedores</td><td>☑</td><td>☑</td><td>☑</td><td>☐</td></tr>
+                <tr><td>Almacenes / Procesos / Rutas</td><td>☑</td><td>☐</td><td>☑</td><td>☐</td></tr>
+                <tr><th class="mod" colspan="5">Almacén</th></tr>
+                <tr><td>Ingreso / Salida / Transferencia</td><td>☑</td><td>☑</td><td>☐</td><td>☐</td></tr>
+                <tr><td>Salida / Declaración prod.</td><td>☑</td><td>☑</td><td>☑</td><td>☐</td></tr>
+                <tr><th class="mod" colspan="5">Producción</th></tr>
+                <tr><td>Órdenes de producción</td><td>☑</td><td>☐</td><td>☑</td><td>☐</td></tr>
+                <tr><td>Carga costos fab. fin de mes</td><td>☑</td><td>☐</td><td>☑</td><td>☐</td></tr>
+                <tr><th class="mod" colspan="5">Reportes</th></tr>
+                <tr><td>BOM + hoja de ruta</td><td>☑</td><td>☐</td><td>☑</td><td>☑</td></tr>
+                <tr><td>Stock / Kardex</td><td>☑</td><td>☑</td><td>☑</td><td>☑</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-footer">
+          <div class="registro">4 roles seed · ejemplo</div>
+          <div class="btns"><button class="btn btn-primary">Guardar</button><button class="btn">Cancelar</button></div>
+        </div>
+      </div>
+
+      <!-- STOCK -->
+      <div class="screen" id="s-stock">
+        <div class="banner-ej">Incluye almacenes proceso (WIP) · Columna último nº transacción</div>
+        <div class="panel">
+          <h2>Reporte — Stock de almacén</h2>
+          <div class="form-row">
+            <div class="field"><label>Almacén</label>
+              <select class="w200"><option value="">(Todos)</option><option>ALM-01</option><option>ALM-02</option><option>PROC-01</option><option>ALM-03</option></select>
+            </div>
+            <div class="field"><label>Artículo</label>
+              <input class="w200" placeholder="Buscar código o nombre…">
+            </div>
+            <button class="btn btn-primary">Filtrar</button>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Almacén</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>U/M</th>
+                <th>Costo prom. S/</th><th>Valor S/</th><th>Último TR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ALM-01 · Compras</td><td>MP-HIL-20/1</td><td>Hilo algodón 20/1 <span class="chip-ej">ej.</span></td>
+                <td class="num">55.000</td><td>kg</td><td class="num">3.0000</td><td class="num">165.00</td><td>TR-2026-000041</td>
+              </tr>
+              <tr>
+                <td>ALM-02 · MP</td><td>MP-HIL-20/1</td><td>Hilo algodón 20/1 <span class="chip-ej">ej.</span></td>
+                <td class="num">0.000</td><td>kg</td><td class="num">3.0000</td><td class="num">0.00</td><td>TR-2026-000042</td>
+              </tr>
+              <tr>
+                <td>PROC-01 · En proceso <span class="chip chip-proc">WIP</span></td>
+                <td>MP-HIL-20/1</td><td>Hilo algodón 20/1 <span class="chip-ej">ej.</span></td>
+                <td class="num">20.000</td><td>kg</td><td class="num">3.0000</td><td class="num">60.00</td><td>TR-2026-000045</td>
+              </tr>
+              <tr>
+                <td>ALM-03 · PT</td><td>PT-POL-PIQ-B</td><td>Polo piqué blanco M <span class="chip-ej">ej.</span></td>
+                <td class="num">200.000</td><td>und</td><td class="num">0.4875</td><td class="num">97.50</td><td>TR-2026-000046</td>
+              </tr>
+              <tr>
+                <td>ALM-01 · Compras</td><td>MP-TEL-JER</td><td>Tela jersey 180 g/m² <span class="chip-ej">ej.</span></td>
+                <td class="num">250.000</td><td>m</td><td class="num">4.5000</td><td class="num">1,125.00</td><td>TR-2026-000040</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>5</strong> de <strong>5</strong></div>
+          <div class="btns"><button class="btn">Imprimir</button><button class="btn">Exportar</button></div>
+        </div>
+      </div>
+
+      <!-- KARDEX -->
+      <div class="screen" id="s-kardex">
+        <div class="banner-ej">Promedio ponderado · Ejemplo numérico del shaping (hilo) · Revalorización fin de mes reflejada</div>
+        <div class="panel">
+          <h2>Reporte — Kardex / movimientos</h2>
+          <div class="form-row">
+            <div class="field"><label>Artículo</label>
+              <select class="w240"><option>MP-HIL-20/1 · Hilo algodón 20/1 (ejemplo)</option><option>PT-POL-PIQ-B · Polo piqué blanco M</option></select>
+            </div>
+            <div class="field"><label>Almacén</label>
+              <select class="w200"><option>ALM-01 · Compras</option><option>PROC-01 · En proceso</option><option>ALM-03 · PT</option></select>
+            </div>
+            <div class="field"><label>Desde</label><input class="w120" type="date" value="2026-11-01"></div>
+            <div class="field"><label>Hasta</label><input class="w120" type="date" value="2026-11-30"></div>
+            <button class="btn btn-primary">Filtrar</button>
+          </div>
+        </div>
+        <div class="grid-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Fecha</th><th>TR</th><th>Tipo</th><th>Entrada</th><th>Salida</th><th>Saldo cant.</th>
+                <th>Costo unit.</th><th>Valor ent.</th><th>Valor sal.</th><th>Saldo valor</th><th>Prom.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>01/11/2026</td><td>TR-2026-000040</td><td>INGRESO</td>
+                <td class="num">100.000</td><td class="num">0</td><td class="num">100.000</td>
+                <td class="num">2.00</td><td class="num">200.00</td><td class="num">0</td><td class="num">200.00</td><td class="num">2.00</td>
+              </tr>
+              <tr>
+                <td>01/11/2026</td><td>TR-2026-000041</td><td>INGRESO</td>
+                <td class="num">100.000</td><td class="num">0</td><td class="num">200.000</td>
+                <td class="num">4.00</td><td class="num">400.00</td><td class="num">0</td><td class="num">600.00</td><td class="num"><strong>3.00</strong></td>
+              </tr>
+              <tr>
+                <td>01/11/2026</td><td>TR-2026-000042</td><td>SALIDA (transf.)</td>
+                <td class="num">0</td><td class="num">40.000</td><td class="num">160.000</td>
+                <td class="num">3.00</td><td class="num">0</td><td class="num">120.00</td><td class="num">480.00</td><td class="num">3.00</td>
+              </tr>
+              <tr>
+                <td>01/11/2026</td><td>TR-2026-000043</td><td>SALIDA</td>
+                <td class="num">0</td><td class="num">5.000</td><td class="num">155.000</td>
+                <td class="num">3.00</td><td class="num">0</td><td class="num">15.00</td><td class="num">465.00</td><td class="num">3.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel" style="margin-top:10px">
+          <h2>Kardex PT (tras declaración + revalorización) <span class="badge-ej">EJEMPLO</span></h2>
+          <p class="hint">ALM-03 · PT-POL-PIQ-B · Entrada parcial 200 und · luego carga fab. fin de mes</p>
+          <div class="grid-wrap">
+            <table class="grid">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>TR</th><th>Tipo</th><th>Entrada</th><th>Saldo cant.</th>
+                  <th>Valor</th><th>Prom. unit.</th><th>Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>01/11/2026</td><td>TR-2026-000046</td><td>ENTRADA_PROD</td>
+                  <td class="num">200.000</td><td class="num">200.000</td>
+                  <td class="num">97.50</td><td class="num">0.4875</td><td>Solo insumos</td>
+                </tr>
+                <tr>
+                  <td>30/11/2026</td><td>REV-2026-000003</td><td>REVALORIZACIÓN</td>
+                  <td class="num">0</td><td class="num">200.000</td>
+                  <td class="num">137.50</td><td class="num"><strong>0.6875</strong></td>
+                  <td>+40.00 costo fab.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-footer">
+          <div class="registro">Registro <strong>4</strong> de <strong>4</strong> (hilo) · + revalorización PT</div>
+          <div class="btns"><button class="btn">Imprimir</button><button class="btn">Exportar</button></div>
+        </div>
+      </div>
+
+    </div><!-- content -->
+  </div><!-- main -->
+</div><!-- app -->
+
+<script>
+  const titles = {
+    home: 'Inicio / Menú principal',
+    ingreso: 'Almacén / Ingreso a almacén',
+    salida: 'Almacén / Salida',
+    transferencia: 'Almacén / Transferencia',
+    'salida-prod': 'Almacén / Salida a producción',
+    declaracion: 'Almacén / Declaración de producción',
+    op: 'Producción / Orden de producción',
+    receta: 'Maestros / Receta (BOM)',
+    roles: 'Admin / Roles y pantallas',
+    stock: 'Reportes / Stock de almacén',
+    kardex: 'Reportes / Kardex'
+  };
+
+  function entrar() {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('app').classList.add('open');
+    // deep-link for screenshots: ?screen=ingreso
+    const q = new URLSearchParams(location.search).get('screen');
+    if (q && titles[q]) go(null, q);
+  }
+
+  function salir() {
+    document.getElementById('app').classList.remove('open');
+    document.getElementById('screen-login').style.display = 'flex';
+  }
+
+  function go(ev, id) {
+    if (ev) ev.preventDefault();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('s-' + id).classList.add('active');
+    document.querySelectorAll('.nav a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('data-screen') === id);
+    });
+    document.getElementById('crumb').textContent = titles[id] || id;
+    history.replaceState(null, '', '?screen=' + id);
+  }
+
+  function tabDec(ev, which) {
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+    ev.currentTarget.classList.add('active');
+    document.getElementById('dec-prod').classList.toggle('active', which === 'prod');
+    document.getElementById('dec-ins').classList.toggle('active', which === 'ins');
+  }
+
+  function toggleModo() {
+    const manual = document.querySelector('input[name=modo][value=manual]').checked;
+    document.getElementById('modo-pct-view').style.display = manual ? 'none' : 'block';
+    document.getElementById('modo-manual-view').style.display = manual ? 'block' : 'none';
+    document.getElementById('pct').disabled = manual;
+  }
+
+  // Auto-enter if ?screen= or ?auto=1 for headless screenshots
+  (function() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('auto') === '1' || params.get('screen')) {
+      entrar();
+    }
+  })();
+</script>
+</body>
+</html>

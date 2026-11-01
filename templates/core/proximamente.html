@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>{{ pantalla_actual.nombre }}</h2>
+  <p>Esta pantalla se entrega en una fase posterior del prototipo.</p>
+  <p class="hint">La fase 1 cubre el acceso, los permisos, los años y los maestros. El mismo ítem del menú abre el movimiento de almacén, la orden de producción o el reporte cuando esa fase esté lista.</p>
+  {% if pantalla_actual.fase %}
+  <p class="hint">Previsto en la fase {{ pantalla_actual.fase }}.</p>
+  {% endif %}
+</div>
+{% endblock %}

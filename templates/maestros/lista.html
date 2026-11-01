@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <h2>{{ titulo }}</h2>
+    {% if puede_escribir and url_crear %}
+    <a class="btn btn-primary" href="{{ url_crear }}">Nuevo</a>
+    {% endif %}
+  </div>
+  {% if mostrar_tipos and tipos %}
+  <p class="hint">Tipos de material fijos, solo consulta:
+    {% for tipo in tipos %}<strong>{{ tipo.codigo }}</strong> {{ tipo.nombre }}{% if not forloop.last %} · {% endif %}{% endfor %}
+  </p>
+  {% endif %}
+  <p class="hint">Los códigos de la demo textil aparecen con la etiqueta EJEMPLO.</p>
+  <form method="get" class="form-row">
+    <div class="field grow">
+      <label for="q">Buscar</label>
+      <input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, nombre o descripción">
+    </div>
+    <button class="btn" type="submit">Buscar</button>
+    {% if q %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+  </form>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        {% for titulo_col in encabezados %}<th>{{ titulo_col }}</th>{% endfor %}
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in filas %}
+      <tr>
+        {% for celda in fila.celdas %}
+        <td>{% if forloop.first and fila.ejemplo %}<span class="badge-ej">EJEMPLO</span> {% endif %}{{ celda }}</td>
+        {% endfor %}
+        <td class="acciones">
+          {% if fila.pantallas %}<a href="{{ fila.pantallas }}">Pantallas</a>{% endif %}
+          {% if fila.editar %}
+          <a href="{{ fila.editar }}">{% if puede_escribir %}Editar{% else %}Ver{% endif %}</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{{ encabezados|length|add:1 }}">No hay registros.{% if puede_escribir and url_crear %} Use Nuevo para crear el primero.{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="form-footer">
+  <div class="registro">
+    {% if page_obj %}
+    Registro <strong>{{ page_obj.start_index }}</strong>–<strong>{{ page_obj.end_index }}</strong> de <strong>{{ paginator.count }}</strong>
+    {% endif %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="btns">
+    {% if page_obj.has_previous %}
+    <a class="btn" href="?q={{ q|urlencode }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a class="btn" href="?q={{ q|urlencode }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

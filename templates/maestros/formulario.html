@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>{{ titulo }}</h2>
+  {% if not puede_escribir %}
+  <div class="banner-ej">Su rol tiene esta pantalla en solo lectura.</div>
+  {% endif %}
+  {% if form.non_field_errors %}
+  <div class="msg msg-error">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form method="post" {% if not puede_escribir %}onsubmit="return false;"{% endif %}>
+    {% csrf_token %}
+    {% include "maestros/_campos.html" %}
+    <div class="form-footer">
+      <div class="registro">Registro <strong>1</strong> de <strong>1</strong></div>
+      <div class="btns">
+        {% if puede_escribir %}
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        {% endif %}
+        {% if url_eliminar %}
+        <button class="btn" type="submit" formaction="{{ url_eliminar }}" formnovalidate onclick="return confirm('¿Eliminar este rol?');">Eliminar</button>
+        {% endif %}
+        <a class="btn" href="{{ url_lista }}">Cancelar</a>
+      </div>
+    </div>
+    {% if nota_eliminar %}<p class="hint">{{ nota_eliminar }}</p>{% endif %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Admin / {{ rol.nombre }} / Pantallas{% endblock %}
+{% block content %}
+<div class="panel">
+  <h2>Pantallas de {{ rol.nombre }}</h2>
+  <p class="hint">Ver muestra el ítem en el menú. Modificar permite Guardar. El menú de quien usa este rol cambia en la siguiente petición.</p>
+  {% if not puede_escribir %}
+  <div class="banner-ej">Su rol tiene esta pantalla en solo lectura.</div>
+  {% endif %}
+  <form method="post" {% if not puede_escribir %}onsubmit="return false;"{% endif %}>
+    {% csrf_token %}
+    {% for grupo in grupos %}
+    <h3 class="mod-title">{{ grupo.modulo }}</h3>
+    <div class="checklist">
+      {% for item in grupo.items %}
+      <div class="perm-row">
+        <label>
+          <input type="checkbox" name="ver" value="{{ item.id }}" {% if item.ver or item.fija %}checked{% endif %} {% if item.fija or not puede_escribir %}disabled{% endif %}>
+          {{ item.nombre }}
+          <span class="hint">{{ item.codigo }}</span>
+        </label>
+        <label class="perm-mod">
+          <input type="checkbox" name="modificar" value="{{ item.id }}" {% if item.modificar or item.fija %}checked{% endif %} {% if item.fija or not puede_escribir %}disabled{% endif %}>
+          Modificar
+        </label>
+        {% if item.fija %}<span class="hint">Siempre incluida para el rol Admin.</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div class="form-footer">
+      <div class="registro">Rol <strong>{{ rol.codigo }}</strong></div>
+      <div class="btns">
+        {% if puede_escribir %}
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        {% endif %}
+        <a class="btn" href="{% url 'admin.rol_pantallas' %}">Cancelar</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

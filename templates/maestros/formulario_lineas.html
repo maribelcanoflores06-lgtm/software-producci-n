@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>{{ titulo }}</h2>
+  <p class="hint">{{ ayuda }}</p>
+  {% if not puede_escribir %}
+  <div class="banner-ej">Su rol tiene esta pantalla en solo lectura.</div>
+  {% endif %}
+  {% if sin_cabecera %}
+  <div class="msg msg-error">{{ texto_vacio }}</div>
+  {% endif %}
+  {% if form.non_field_errors %}
+  <div class="msg msg-error">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% if formset.non_form_errors %}
+  <div class="msg msg-error">{{ formset.non_form_errors }}</div>
+  {% endif %}
+  <form method="post" {% if not puede_escribir %}onsubmit="return false;"{% endif %}>
+    {% csrf_token %}
+    {% include "maestros/_campos.html" %}
+    {{ formset.management_form }}
+    <div class="grid-wrap">
+      <table class="grid">
+        <thead>
+          <tr>
+            {% for field in formset.empty_form.visible_fields %}
+              {% if field.name != 'DELETE' %}<th>{{ field.label }}</th>{% endif %}
+            {% endfor %}
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lineas-body">
+          {% for linea in formset %}
+          <tr>
+            {% for field in linea.visible_fields %}
+              {% if field.name != 'DELETE' %}
+              <td>
+                {{ field }}
+                {% if field.errors %}<span class="err">{{ field.errors|striptags }}</span>{% endif %}
+              </td>
+              {% endif %}
+            {% endfor %}
+            <td>
+              {% if linea.instance.pk and puede_escribir %}
+              <label>{{ linea.DELETE }} Quitar</label>
+              {% endif %}
+            </td>
+            {% for hidden in linea.hidden_fields %}{{ hidden }}{% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <template id="linea-vacia">
+      <tr>
+        {% for field in formset.empty_form.visible_fields %}
+          {% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}
+        {% endfor %}
+        <td></td>
+        {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+      </tr>
+    </template>
+    <div class="form-footer">
+      <div class="registro">Registro <strong id="contador">0</strong> de <strong id="contador-total">0</strong></div>
+      <div class="btns">
+        {% if puede_escribir %}
+        <button class="btn" type="button" onclick="agregarLinea('{{ prefijo }}')">Agregar línea</button>
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        {% endif %}
+        <a class="btn" href="{{ url_lista }}">Cancelar</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

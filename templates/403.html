@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sin permiso · Software de Producción{% endblock %}
+{% block breadcrumb %}Acceso / Sin permiso{% endblock %}
+{% block content %}
+<div class="panel">
+  <h2>Sin permiso</h2>
+  <p class="msg msg-error">{{ mensaje|default:"No tienes permiso para esta acción." }}</p>
+  {% if pantalla_denegada %}
+  <p class="hint">Pantalla: {{ pantalla_denegada.nombre }} ({{ pantalla_denegada.codigo }}).</p>
+  {% endif %}
+  {% if user.is_authenticated %}
+  <a class="btn" href="{% url 'home' %}">Volver al menú</a>
+  {% else %}
+  <a class="btn btn-primary" href="{% url 'login' %}">Ingresar</a>
+  {% endif %}
+</div>
+{% endblock %}
