@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>Saldo inicial</h2>
+  <p class="hint">Por año y almacén, registre artículo, cantidad y costo unitario en soles. El valor es cantidad × costo. Genera la nota CODALMACEN-AÑO-CORRELATIVO y el primer registro de Kardex del año.</p>
+  {% if not puede_escribir %}
+  <div class="banner-ej">Su rol tiene esta pantalla en solo lectura.</div>
+  {% endif %}
+  {% if form.non_field_errors %}
+  <div class="msg msg-error">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form method="post" {% if not puede_escribir %}onsubmit="return false;"{% endif %}>
+    {% csrf_token %}
+    {% include "maestros/_campos.html" %}
+    <p class="hint" id="valor-preview">Valor S/ <strong id="valor-calc">0.0000</strong></p>
+    <div class="form-footer">
+      <div class="registro">Registro <strong>1</strong> de <strong>1</strong></div>
+      <div class="btns">
+        {% if puede_escribir %}
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        {% endif %}
+        <a class="btn" href="{% url 'admin.anios' %}">Cancelar</a>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Año</th><th>Almacén</th><th>Artículo</th><th>Cantidad</th><th>Costo unit.</th><th>Valor</th><th>Nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in saldos %}
+      <tr>
+        <td>{{ fila.obj.anio.anio }}</td>
+        <td>{{ fila.obj.almacen.codigo }}</td>
+        <td>{% if fila.ejemplo %}<span class="badge-ej">EJEMPLO</span> {% endif %}{{ fila.obj.articulo.codigo }} · {{ fila.obj.articulo.descripcion }}</td>
+        <td class="num">{{ fila.obj.cantidad }}</td>
+        <td class="num">{{ fila.obj.costo_promedio }}</td>
+        <td class="num">{{ fila.obj.valor }}</td>
+        <td>{{ fila.nota }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No hay saldos iniciales.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="form-footer">
+  <div class="registro">Registro <strong>1</strong>–<strong>{{ saldos|length }}</strong> de <strong>{{ saldos|length }}</strong></div>
+</div>
+<script>
+  function refrescarValor() {
+    const cant = document.getElementById('id_cantidad');
+    const costo = document.getElementById('id_costo_unitario');
+    const salida = document.getElementById('valor-calc');
+    if (!cant || !costo || !salida) return;
+    const a = parseFloat((cant.value || '0').replace(',', '.')) || 0;
+    const b = parseFloat((costo.value || '0').replace(',', '.')) || 0;
+    salida.textContent = (a * b).toFixed(4);
+  }
+  document.getElementById('id_cantidad')?.addEventListener('input', refrescarValor);
+  document.getElementById('id_costo_unitario')?.addEventListener('input', refrescarValor);
+  refrescarValor();
+</script>
+{% endblock %}

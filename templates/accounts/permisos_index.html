@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>Rol ↔ pantallas</h2>
+  <p class="hint">Elija un rol y marque las pantallas que puede ver. Modificar habilita Guardar. El rol Consulta queda en solo lectura de reportes.</p>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead><tr><th>Rol</th><th>Usuarios</th><th>Activo</th><th></th></tr></thead>
+    <tbody>
+      {% for rol in roles %}
+      <tr>
+        <td>{{ rol.nombre }} <span class="hint">{{ rol.codigo }}</span></td>
+        <td class="num">{{ rol.n_usuarios }}</td>
+        <td>{% if rol.activo %}Sí{% else %}No{% endif %}</td>
+        <td><a href="{% url 'admin.rol_pantallas_editar' rol.pk %}">Pantallas</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
