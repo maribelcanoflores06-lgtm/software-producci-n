@@ -5,7 +5,7 @@ from django.forms.models import BaseInlineFormSet, ModelChoiceIterator
 
 from apps.almacen.models import Movimiento, MovimientoDetalle
 from apps.core.codigos import MENSAJE_ALMACEN, MENSAJE_CODIGO, PATRON_ALMACEN, PATRON_CODIGO, normalizar_codigo
-from apps.core.formularios import DenseForm, MontoField
+from apps.core.formularios import DenseForm, MontoField, opcion_vacia
 from apps.core.numeros import q4
 from apps.maestros.models import (
     Almacen,
@@ -123,11 +123,15 @@ class AnioChoice(forms.ModelChoiceField):
 
 
 class SaldoInicialForm(forms.Form):
-    anio = AnioChoice(queryset=Anio.objects.none(), label='Año')
-    almacen = forms.ModelChoiceField(queryset=Almacen.objects.none(), label='Almacén')
-    articulo = forms.ModelChoiceField(queryset=Articulo.objects.none(), label='Artículo')
+    anio = AnioChoice(queryset=Anio.objects.none(), label='Año', empty_label=opcion_vacia('año'))
+    almacen = forms.ModelChoiceField(
+        queryset=Almacen.objects.none(), label='Almacén', empty_label=opcion_vacia('almacén'),
+    )
+    articulo = forms.ModelChoiceField(
+        queryset=Articulo.objects.none(), label='Artículo', empty_label=opcion_vacia('artículo'),
+    )
     cantidad = MontoField(label='Cantidad')
-    costo_unitario = MontoField(label='Costo unitario (S/)')
+    costo_unitario = MontoField(label='Costo unitario (S/)', presentacion='costo')
 
     def __init__(self, *args, solo_lectura=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -188,6 +192,7 @@ class RecetaForm(DenseForm):
         else:
             qs = qs.filter(activo=True)
         self.fields['articulo_pt'].queryset = qs.order_by('codigo')
+        self.fields['articulo_pt'].empty_label = opcion_vacia('artículo')
 
     def clean_lote_base(self):
         valor = self.cleaned_data.get('lote_base')
@@ -230,7 +235,7 @@ class RecetaLineaForm(forms.ModelForm):
         campo = self.fields['articulo_insumo']
         campo.iterator = IteradorSinProducto
         campo.producto_excluido = pt_id
-        campo.empty_label = '—'
+        campo.empty_label = opcion_vacia('artículo')
         campo.queryset = qs.order_by('codigo')
 
     def clean_cantidad_por_lote(self):
@@ -314,8 +319,9 @@ class RutaLineaForm(forms.ModelForm):
         if self.instance.pk and self.instance.proceso_id:
             qs = Proceso.objects.filter(Q(activo=True) | Q(pk=self.instance.proceso_id))
         self.fields['proceso'].queryset = qs.order_by('codigo')
-        self.fields['proceso'].empty_label = '—'
+        self.fields['proceso'].empty_label = opcion_vacia('proceso')
         self.fields['secuencia'].widget.attrs['class'] = 'w80'
+        self.fields['secuencia'].widget.attrs['placeholder'] = '1'
 
     def clean_secuencia(self):
         valor = self.cleaned_data.get('secuencia')
@@ -395,7 +401,12 @@ class MaquinaLineaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         actual = self.instance.proceso_id if self.instance.pk else None
         qs = Proceso.objects.filter(Q(activo=True) | Q(pk=actual))
-        campo = CampoProcesoMaquina(queryset=qs.order_by('codigo'), label='Proceso', empty_label='—', required=False)
+        campo = CampoProcesoMaquina(
+            queryset=qs.order_by('codigo'),
+            label='Proceso',
+            empty_label=opcion_vacia('proceso'),
+            required=False,
+        )
         campo.inactivo_permitido = actual
         self.fields['proceso'] = campo
 

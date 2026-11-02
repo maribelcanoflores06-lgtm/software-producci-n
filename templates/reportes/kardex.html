@@ -60,13 +60,13 @@
         <td>{{ fila.tipo_etiqueta }}</td>
         <td>{{ fila.almacen.codigo }}</td>
         <td>{{ fila.articulo.codigo }}</td>
-        <td class="num">{{ fila.cantidad_entrada }}</td>
-        <td class="num">{{ fila.cantidad_salida }}</td>
-        <td class="num">{{ fila.saldo_cantidad }}</td>
-        <td class="num">{{ fila.valor_entrada }}</td>
-        <td class="num">{{ fila.valor_salida }}</td>
-        <td class="num">{{ fila.saldo_valor }}</td>
-        <td class="num">{{ fila.costo_unit_promedio }}</td>
+        <td class="num">{{ fila.cantidad_entrada|cantidad }}</td>
+        <td class="num">{{ fila.cantidad_salida|cantidad }}</td>
+        <td class="num">{{ fila.saldo_cantidad|cantidad }}</td>
+        <td class="num">{{ fila.valor_entrada|soles }}</td>
+        <td class="num">{{ fila.valor_salida|soles }}</td>
+        <td class="num">{{ fila.saldo_valor|soles }}</td>
+        <td class="num">{{ fila.costo_unit_promedio|costo }}</td>
         <td>{% if fila.es_revalorizacion %}Sí{% else %}No{% endif %}</td>
         <td>—</td>
       </tr>

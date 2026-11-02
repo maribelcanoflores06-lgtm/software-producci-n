@@ -214,7 +214,7 @@ class TestKardexFase3(TestCase):
             )
         self.assertEqual(
             ctx.exception.messages[0],
-            'Stock insuficiente de MP-HIL-20/1 en ALM91: disponible 5.0000, pedido 10.0000',
+            'Stock insuficiente de MP-HIL-20/1 en ALM91: disponible 5, pedido 10',
         )
         self.assertEqual(Movimiento.objects.count(), antes['mov'])
         self.assertEqual(MovimientoDetalle.objects.count(), antes['det'])
@@ -395,8 +395,11 @@ class TestPantallasFase3(TestCase):
         stock = cliente.get(reverse('rep.stock'), {'anio': anio.pk, 'almacen': almacen.pk})
         self.assertContains(stock, 'data-autofiltro')
         self.assertContains(stock, 'ALM03-2026-000001')
-        self.assertContains(stock, '100,0000')
-        self.assertContains(stock, '2,0000')
+        self.assertContains(stock, 'class="num">100<')
+        self.assertContains(stock, '2.0000')
+        self.assertContains(stock, '200.00')
+        self.assertNotContains(stock, '100,0000')
+        self.assertNotContains(stock, '2,0000')
         self.assertContains(stock, 'Última nota')
         filas = list(stock.context['filas'])
         self.assertEqual(len(filas), 1)
@@ -423,7 +426,9 @@ class TestPantallasFase3(TestCase):
             'hasta': '2026-11-01',
         })
         self.assertContains(kardex, 'data-autofiltro')
-        self.assertContains(kardex, '3,0000')
+        self.assertContains(kardex, '3.0000')
+        self.assertContains(kardex, '600.00')
+        self.assertNotContains(kardex, '3,0000')
         self.assertContains(kardex, 'ALM01-2026-000005')
         self.assertEqual(
             {fila.articulo.codigo for fila in kardex.context['filas']},
@@ -448,10 +453,14 @@ class TestPantallasFase3(TestCase):
         cliente, _ok = entrar('consulta', 'demo-consulta')
         anio = Anio.objects.get(anio=2026)
         pagina = cliente.get(reverse('rep.stock'), {'anio': anio.pk, 'articulo': Articulo.objects.get(codigo='MP-HIL-20/1').pk})
-        self.assertContains(pagina, '160,0000')
-        self.assertContains(pagina, '35,0000')
+        self.assertContains(pagina, 'class="num">160<')
+        self.assertContains(pagina, 'class="num">35<')
         self.assertContains(pagina, 'ALM01-2026-000006')
         self.assertContains(pagina, 'ALM02-2026-000001')
-        self.assertContains(pagina, '3,0000')
+        self.assertContains(pagina, '3.0000')
+        self.assertContains(pagina, '480.00')
+        self.assertContains(pagina, '105.00')
+        self.assertNotContains(pagina, '160,0000')
+        self.assertNotContains(pagina, '3,0000')
         codigos = {fila.almacen.codigo for fila in pagina.context['filas']}
         self.assertEqual(codigos, {'ALM01', 'ALM02'})

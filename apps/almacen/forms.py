@@ -3,14 +3,14 @@ from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet, formset_factory
 
 from apps.almacen.models import Movimiento
-from apps.core.formularios import MontoField
+from apps.core.formularios import MontoField, opcion_vacia
 from apps.maestros.models import Almacen, Anio, Articulo, Cliente, Proveedor
 
 def _fecha():
     return forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'})
 
 COMPROBANTES = [
-    ('', '—'),
+    ('', 'Seleccionar comprobante…'),
     ('FACTURA', 'Factura'),
     ('BOLETA', 'Boleta'),
     ('OTROS', 'Otros'),
@@ -44,12 +44,12 @@ class IngresoForm(_CabeceraNota):
     almacen_destino = forms.ModelChoiceField(
         queryset=Almacen.objects.none(),
         label='Almacén',
-        empty_label='—',
+        empty_label=opcion_vacia('almacén'),
     )
     proveedor = forms.ModelChoiceField(
         queryset=Proveedor.objects.none(),
         label='Proveedor',
-        empty_label='—',
+        empty_label=opcion_vacia('proveedor'),
         error_messages={'required': 'El ingreso exige un proveedor.'},
     )
 
@@ -67,13 +67,13 @@ class SalidaForm(_CabeceraNota):
     almacen_origen = forms.ModelChoiceField(
         queryset=Almacen.objects.none(),
         label='Almacén',
-        empty_label='—',
+        empty_label=opcion_vacia('almacén'),
     )
     cliente = forms.ModelChoiceField(
         queryset=Cliente.objects.none(),
         label='Cliente',
         required=False,
-        empty_label='—',
+        empty_label=opcion_vacia('cliente'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -90,12 +90,12 @@ class TransferenciaForm(_CabeceraNota):
     almacen_origen = forms.ModelChoiceField(
         queryset=Almacen.objects.none(),
         label='Almacén origen',
-        empty_label='—',
+        empty_label=opcion_vacia('almacén'),
     )
     almacen_destino = forms.ModelChoiceField(
         queryset=Almacen.objects.none(),
         label='Almacén destino',
-        empty_label='—',
+        empty_label=opcion_vacia('almacén'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -122,13 +122,22 @@ class LineaForm(forms.Form):
         queryset=Articulo.objects.none(),
         label='Artículo',
         required=False,
-        empty_label='—',
+        empty_label=opcion_vacia('artículo'),
     )
     cantidad = MontoField(label='Cantidad', required=False)
-    costo_unitario = MontoField(label='Costo unit. S/', required=False)
-    lote_ref = forms.CharField(label='Lote', required=False, max_length=40)
-    ubicacion_ref = forms.CharField(label='Ubicación', required=False, max_length=40)
-    observacion = forms.CharField(label='Obs.', required=False, max_length=200)
+    costo_unitario = MontoField(label='Costo unit. S/', required=False, presentacion='costo')
+    lote_ref = forms.CharField(
+        label='Lote', required=False, max_length=40,
+        widget=forms.TextInput(attrs={'placeholder': 'Opcional'}),
+    )
+    ubicacion_ref = forms.CharField(
+        label='Ubicación', required=False, max_length=40,
+        widget=forms.TextInput(attrs={'placeholder': 'Opcional'}),
+    )
+    observacion = forms.CharField(
+        label='Obs.', required=False, max_length=200,
+        widget=forms.TextInput(attrs={'placeholder': 'Opcional'}),
+    )
 
     def __init__(self, *args, con_costo=False, **kwargs):
         super().__init__(*args, **kwargs)

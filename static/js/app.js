@@ -43,7 +43,7 @@ function aplicarCatalogo(select, catalogo, pt) {
   select.innerHTML = '';
   const vacio = document.createElement('option');
   vacio.value = '';
-  vacio.textContent = '—';
+  vacio.textContent = 'Seleccionar artículo…';
   if (!elegido) vacio.selected = true;
   select.appendChild(vacio);
   catalogo.forEach(function (item) {
@@ -149,6 +149,41 @@ function enlazarConfirmacion() {
   });
 }
 
+function leerNumero(texto) {
+  texto = String(texto || '').trim().replace(/\s/g, '').replace(/\u00a0/g, '');
+  if (!texto) return 0;
+  var coma = texto.lastIndexOf(',');
+  var punto = texto.lastIndexOf('.');
+  if (coma !== -1 && punto !== -1) {
+    texto = coma > punto
+      ? texto.replace(/\./g, '').replace(',', '.')
+      : texto.replace(/,/g, '');
+  } else if (coma !== -1) {
+    var partes = texto.split(',');
+    var miles = partes.length > 1 && partes.slice(1).every(function (parte) {
+      return /^\d{3}$/.test(parte);
+    });
+    texto = miles ? texto.replace(/,/g, '') : texto.replace(',', '.');
+  }
+  var n = parseFloat(texto);
+  return isNaN(n) ? 0 : n;
+}
+
+function textoMonto(numero) {
+  var negativo = numero < 0;
+  var partes = Math.abs(numero).toFixed(2).split('.');
+  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (negativo ? '-' : '') + partes.join('.');
+}
+
+function refrescarValor() {
+  var cant = document.getElementById('id_cantidad');
+  var costo = document.getElementById('id_costo_unitario');
+  var salida = document.getElementById('valor-calc');
+  if (!cant || !costo || !salida) return;
+  salida.textContent = textoMonto(leerNumero(cant.value) * leerNumero(costo.value));
+}
+
 function enlazarPermisos() {
   document.querySelectorAll('.perm-row').forEach(function (fila) {
     const ver = fila.querySelector('input[name="ver"]');
@@ -181,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
   filtrarInsumos();
   pintarMaquinasRuta();
   pintarMes();
+  refrescarValor();
   enlazarAutofiltro();
   enlazarConfirmacion();
   enlazarPermisos();
@@ -189,6 +225,12 @@ document.addEventListener('DOMContentLoaded', function () {
     fecha.addEventListener('change', pintarMes);
     fecha.addEventListener('input', pintarMes);
   }
+  ['id_cantidad', 'id_costo_unitario'].forEach(function (id) {
+    var campo = document.getElementById(id);
+    if (campo && document.getElementById('valor-calc')) {
+      campo.addEventListener('input', refrescarValor);
+    }
+  });
   document.addEventListener('change', function (event) {
     const nombre = event.target && event.target.name;
     if (nombre && nombre.indexOf('-proceso') !== -1) pintarMaquinasRuta();

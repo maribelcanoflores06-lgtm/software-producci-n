@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from apps.almacen.models import Kardex, Movimiento, MovimientoDetalle, StockActual
 from apps.almacen.services.numeracion import next_nota
-from apps.core.numeros import q4
+from apps.core.numeros import formato_cantidad, q4
 
 
 def crear_ingreso(
@@ -306,7 +306,7 @@ def _crear_detalle(movimiento, linea, costo):
 
 
 def _fmt(valor):
-    return f'{q4(valor):.4f}'
+    return formato_cantidad(valor)
 
 
 def _preparar_salida(anio, almacen, articulo, cantidad):

@@ -51,9 +51,9 @@
         <td>{{ fila.articulo.codigo }}</td>
         <td>{{ fila.articulo.descripcion }}</td>
         <td>{{ fila.articulo.unidad_medida }}</td>
-        <td class="num">{{ fila.cantidad }}</td>
-        <td class="num">{{ fila.costo_promedio }}</td>
-        <td class="num">{{ fila.valor }}</td>
+        <td class="num">{{ fila.cantidad|cantidad }}</td>
+        <td class="num">{{ fila.costo_promedio|costo }}</td>
+        <td class="num">{{ fila.valor|soles }}</td>
         <td>{{ fila.ultima_nota }}</td>
       </tr>
       {% empty %}

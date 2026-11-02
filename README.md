@@ -107,7 +107,7 @@ En macOS o Linux: `cp db.sqlite3 db.sqlite3.bak`.
 
 ## Zona horaria e idioma
 
-La interfaz está en español. La hora es `America/Lima`. Cantidades y montos usan 4 decimales. En los formularios puede escribir el decimal con punto o con coma.
+La interfaz está en español. La hora es `America/Lima`. Los números usan punto decimal y coma de miles (`1,250.00`). Los montos en soles muestran 2 decimales, las cantidades hasta 4 sin ceros de más (`50`, `2.5`) y los costos unitarios 4 decimales (`3.0000`). En los formularios el decimal se escribe con punto (`2.5` o `1,250.50`). Una coma suelta también se acepta (`2,5`).
 
 ## Documentos
 

@@ -111,7 +111,7 @@ class TestRecetasYLineas(TestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.assertContains(respuesta, 'Editar receta')
         self.assertContains(respuesta, 'mayor que cero')
-        self.assertContains(respuesta, '3,25')
+        self.assertContains(respuesta, 'value="3.25"')
         self.assertContains(respuesta, 'value="7"')
         nombres = re.findall(r'name="(detalles-(?:\d+|__prefix__)-articulo_insumo)"', html)
         self.assertGreaterEqual(len(nombres), len(detalles) + 1)
@@ -155,7 +155,7 @@ class TestRecetasYLineas(TestCase):
         })
         self.assertEqual(invalido.status_code, 200)
         self.assertContains(invalido, 'Editar receta')
-        self.assertContains(invalido, '1,5')
+        self.assertContains(invalido, 'value="1.5"')
         self.assertEqual(receta.detalles.count(), 4)
 
         valido = cliente.post(reverse('mae.recetas_editar', args=[receta.pk]), {

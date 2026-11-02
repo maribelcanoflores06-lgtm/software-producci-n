@@ -55,9 +55,9 @@
         <td>{{ linea.articulo.codigo }}</td>
         <td>{{ linea.articulo.descripcion }}</td>
         <td>{{ linea.articulo.unidad_medida }}</td>
-        <td class="num">{{ linea.cantidad }}</td>
-        <td class="num">{{ linea.costo_unitario }}</td>
-        <td class="num">{{ linea.costo_total }}</td>
+        <td class="num">{{ linea.cantidad|cantidad }}</td>
+        <td class="num">{{ linea.costo_unitario|costo }}</td>
+        <td class="num">{{ linea.costo_total|soles }}</td>
         <td>{{ linea.lote_ref|default:"—" }}</td>
         <td>{{ linea.ubicacion_ref|default:"—" }}</td>
         <td>{{ linea.observacion|default:"—" }}</td>
@@ -82,14 +82,14 @@
         <tr>
           <td>{{ fila.almacen.codigo }}</td>
           <td>{{ fila.articulo.codigo }}</td>
-          <td class="num">{{ fila.cantidad_entrada }}</td>
-          <td class="num">{{ fila.cantidad_salida }}</td>
-          <td class="num">{{ fila.saldo_cantidad }}</td>
-          <td class="num">{{ fila.costo_unit_mov }}</td>
-          <td class="num">{{ fila.costo_unit_promedio }}</td>
-          <td class="num">{{ fila.valor_entrada }}</td>
-          <td class="num">{{ fila.valor_salida }}</td>
-          <td class="num">{{ fila.saldo_valor }}</td>
+          <td class="num">{{ fila.cantidad_entrada|cantidad }}</td>
+          <td class="num">{{ fila.cantidad_salida|cantidad }}</td>
+          <td class="num">{{ fila.saldo_cantidad|cantidad }}</td>
+          <td class="num">{{ fila.costo_unit_mov|costo }}</td>
+          <td class="num">{{ fila.costo_unit_promedio|costo }}</td>
+          <td class="num">{{ fila.valor_entrada|soles }}</td>
+          <td class="num">{{ fila.valor_salida|soles }}</td>
+          <td class="num">{{ fila.saldo_valor|soles }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -97,7 +97,7 @@
   </div>
 </div>
 <div class="form-footer">
-  <div class="registro">Registro <strong>{{ detalles|length }}</strong> de <strong>{{ detalles|length }}</strong> · Total S/ <strong>{{ total }}</strong></div>
+  <div class="registro">Registro <strong>{{ detalles|length }}</strong> de <strong>{{ detalles|length }}</strong> · Total S/ <strong>{{ total|soles }}</strong></div>
   <div class="btns">
     <a class="btn" href="{{ url_stock }}">Ver stock</a>
     <a class="btn" href="{{ url_kardex }}">Ver kardex</a>
