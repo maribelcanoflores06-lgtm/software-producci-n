@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>Stock</h2>
+  <p class="hint">Existencia valorizada del año, en soles (S/). Incluye almacenes de proceso. La última nota es la que dejó el saldo.</p>
+  <form method="get" class="form-row" data-autofiltro>
+    <div class="field">
+      <label for="filtro-anio">Año</label>
+      <select id="filtro-anio" name="anio">
+        <option value="">Todos</option>
+        {% for anio in anios %}
+        <option value="{{ anio.pk }}"{% if anio_seleccionado == anio.pk|stringformat:"s" %} selected{% endif %}>{{ anio.anio }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="filtro-almacen">Almacén</label>
+      <select id="filtro-almacen" name="almacen">
+        <option value="">Todos</option>
+        {% for almacen in almacenes %}
+        <option value="{{ almacen.pk }}"{% if almacen_seleccionado == almacen.pk|stringformat:"s" %} selected{% endif %}>{{ almacen.codigo }} · {{ almacen.nombre }}{% if almacen.es_proceso %} · proceso{% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="filtro-articulo">Artículo</label>
+      <select id="filtro-articulo" name="articulo">
+        <option value="">Todos</option>
+        {% for articulo in articulos %}
+        <option value="{{ articulo.pk }}"{% if articulo_seleccionado == articulo.pk|stringformat:"s" %} selected{% endif %}>{{ articulo.codigo }} · {{ articulo.descripcion }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if hay_filtro %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+  </form>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Almacén</th><th>Nombre</th><th>Proceso</th><th>Artículo</th><th>Descripción</th>
+        <th>UM</th><th>Cantidad</th><th>Costo promedio S/</th><th>Valor S/</th><th>Última nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in filas %}
+      <tr>
+        <td>{{ fila.almacen.codigo }}</td>
+        <td>{{ fila.almacen.nombre }}</td>
+        <td>{% if fila.almacen.es_proceso %}Sí{% else %}No{% endif %}</td>
+        <td>{{ fila.articulo.codigo }}</td>
+        <td>{{ fila.articulo.descripcion }}</td>
+        <td>{{ fila.articulo.unidad_medida }}</td>
+        <td class="num">{{ fila.cantidad|cantidad }}</td>
+        <td class="num">{{ fila.costo_promedio|costo }}</td>
+        <td class="num">{{ fila.valor|soles }}</td>
+        <td>{{ fila.ultima_nota }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10">No hay stock{% if hay_filtro %} con ese filtro{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="form-footer">
+  <div class="registro">
+    {% if page_obj.paginator.count %}
+    Registro <strong>{{ page_obj.start_index }}</strong>–<strong>{{ page_obj.end_index }}</strong> de <strong>{{ page_obj.paginator.count }}</strong>
+    {% else %}
+    Registro <strong>0</strong> de <strong>0</strong>
+    {% endif %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="btns">
+    {% if page_obj.has_previous %}<a class="btn" href="{{ url_anterior }}">Anterior</a>{% endif %}
+    {% if page_obj.has_next %}<a class="btn" href="{{ url_siguiente }}">Siguiente</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

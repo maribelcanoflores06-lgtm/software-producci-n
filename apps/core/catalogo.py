@@ -137,7 +137,6 @@ PANTALLAS = [
         'icono': '↓',
         'path': 'almacen/ingreso/',
         'fase': 3,
-        'placeholder': True,
         'desc': 'Compra nacional, importación, muestras u otros.',
     },
     {
@@ -147,7 +146,6 @@ PANTALLAS = [
         'icono': '↑',
         'path': 'almacen/salida/',
         'fase': 3,
-        'placeholder': True,
         'desc': 'Salida de un almacén normal.',
     },
     {
@@ -157,7 +155,6 @@ PANTALLAS = [
         'icono': '⇄',
         'path': 'almacen/transferencia/',
         'fase': 3,
-        'placeholder': True,
         'desc': 'Entre almacenes que no son de proceso.',
     },
     {
@@ -217,7 +214,6 @@ PANTALLAS = [
         'icono': '📦',
         'path': 'reportes/stock/',
         'fase': 3,
-        'placeholder': True,
         'desc': 'Existencia valorizada y última nota.',
     },
     {
@@ -227,7 +223,6 @@ PANTALLAS = [
         'icono': '📊',
         'path': 'reportes/kardex/',
         'fase': 3,
-        'placeholder': True,
         'desc': 'Movimientos y promedio ponderado.',
     },
 ]

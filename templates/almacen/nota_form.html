@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2>{{ titulo }}</h2>
+  <p class="hint">{{ cfg.ayuda }} Agregar línea se queda en esta pantalla. La nota, con formato CODALMACEN-AÑO-######, aparece al guardar.</p>
+  {% if not puede_escribir %}
+  <div class="banner-ej">Su rol tiene esta pantalla en solo lectura.</div>
+  {% endif %}
+  {% if sin_anio %}
+  <div class="msg msg-error">No hay un año abierto. Cree uno en Años / cierre anual antes de registrar movimientos.</div>
+  {% endif %}
+  {% if form.non_field_errors %}
+  <div class="msg msg-error">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% if formset.non_form_errors %}
+  <div class="msg msg-error">{{ formset.non_form_errors }}</div>
+  {% endif %}
+  <form method="post" {% if not puede_escribir %}onsubmit="return false;"{% endif %}>
+    {% csrf_token %}
+    {% if cfg.modo == 'transferencia' %}
+    <div class="form-row">
+      <div class="field">
+        <label for="{{ form.anio.id_for_label }}">Año</label>{{ form.anio }}
+        {% if form.anio.errors %}<span class="err">{{ form.anio.errors|striptags }}</span>{% endif %}
+      </div>
+      <div class="field">
+        <label for="mes-derivado">Mes</label>
+        <input id="mes-derivado" value="{{ mes }}" readonly>
+      </div>
+      <div class="field">
+        <label for="{{ form.fecha.id_for_label }}">F. registro</label>{{ form.fecha }}
+        {% if form.fecha.errors %}<span class="err">{{ form.fecha.errors|striptags }}</span>{% endif %}
+      </div>
+      <div class="field">
+        <label>Tipo de operación</label>
+        <span class="auto-badge">TRANSFERENCIA</span>
+      </div>
+      <div class="field">
+        <label>Nota</label>
+        <span class="auto-badge">AUTO</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="{{ form.almacen_origen.id_for_label }}">Almacén origen</label>{{ form.almacen_origen }}
+        {% if form.almacen_origen.errors %}<span class="err">{{ form.almacen_origen.errors|striptags }}</span>{% endif %}
+      </div>
+      <div class="field">
+        <label for="{{ form.almacen_destino.id_for_label }}">Almacén destino</label>{{ form.almacen_destino }}
+        {% if form.almacen_destino.errors %}<span class="err">{{ form.almacen_destino.errors|striptags }}</span>{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="form-row">
+      <div class="field">
+        {% if cfg.modo == 'ingreso' %}
+        <label for="{{ form.almacen_destino.id_for_label }}">Almacén</label>{{ form.almacen_destino }}
+        {% if form.almacen_destino.errors %}<span class="err">{{ form.almacen_destino.errors|striptags }}</span>{% endif %}
+        {% else %}
+        <label for="{{ form.almacen_origen.id_for_label }}">Almacén</label>{{ form.almacen_origen }}
+        {% if form.almacen_origen.errors %}<span class="err">{{ form.almacen_origen.errors|striptags }}</span>{% endif %}
+        {% endif %}
+      </div>
+      <div class="field">
+        <label for="{{ form.anio.id_for_label }}">Año</label>{{ form.anio }}
+        {% if form.anio.errors %}<span class="err">{{ form.anio.errors|striptags }}</span>{% endif %}
+      </div>
+      <div class="field">
+        <label for="mes-derivado">Mes</label>
+        <input id="mes-derivado" value="{{ mes }}" readonly>
+      </div>
+      <div class="field">
+        <label for="{{ form.fecha.id_for_label }}">F. registro</label>{{ form.fecha }}
+        {% if form.fecha.errors %}<span class="err">{{ form.fecha.errors|striptags }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        {% if cfg.modo == 'ingreso' %}
+        <label for="{{ form.subtipo.id_for_label }}">Tipo de operación</label>{{ form.subtipo }}
+        {% if form.subtipo.errors %}<span class="err">{{ form.subtipo.errors|striptags }}</span>{% endif %}
+        {% else %}
+        <label>Tipo de operación</label>
+        <span class="auto-badge">SALIDA</span>
+        {% endif %}
+      </div>
+      <div class="field">
+        <label>Nota</label>
+        <span class="auto-badge">AUTO</span>
+      </div>
+      {% if cfg.modo == 'ingreso' %}
+      <div class="field grow">
+        <label for="{{ form.proveedor.id_for_label }}">Proveedor</label>{{ form.proveedor }}
+        {% if form.proveedor.errors %}<span class="err">{{ form.proveedor.errors|striptags }}</span>{% endif %}
+      </div>
+      {% else %}
+      <div class="field grow">
+        <label for="{{ form.cliente.id_for_label }}">Cliente</label>{{ form.cliente }}
+        {% if form.cliente.errors %}<span class="err">{{ form.cliente.errors|striptags }}</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="form-row">
+      <div class="field">
+        <label for="{{ form.tipo_comprobante.id_for_label }}">Tipo comprobante</label>{{ form.tipo_comprobante }}
+      </div>
+      <div class="field">
+        <label for="{{ form.serie_doc.id_for_label }}">Serie doc. ref.</label>{{ form.serie_doc }}
+      </div>
+      <div class="field">
+        <label for="{{ form.numero_doc.id_for_label }}">Número</label>{{ form.numero_doc }}
+      </div>
+      <div class="field">
+        <label for="{{ form.fecha_doc.id_for_label }}">Fecha doc. ref.</label>{{ form.fecha_doc }}
+        {% if form.fecha_doc.errors %}<span class="err">{{ form.fecha_doc.errors|striptags }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field grow">
+        <label for="{{ form.observacion.id_for_label }}">Obs.</label>{{ form.observacion }}
+      </div>
+    </div>
+    {{ formset.management_form }}
+    <div class="grid-wrap">
+      <table class="grid">
+        <thead>
+          <tr>
+            {% for field in formset.empty_form.visible_fields %}
+              {% if field.name != 'DELETE' %}<th>{{ field.label }}</th>{% endif %}
+            {% endfor %}
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lineas-body">
+          {% for linea in formset %}
+          <tr {% if linea.DELETE.value %}hidden{% endif %}>
+            {% for field in linea.visible_fields %}
+              {% if field.name != 'DELETE' %}
+              <td>
+                {{ field }}
+                {% if field.errors %}<span class="err">{{ field.errors|striptags }}</span>{% endif %}
+              </td>
+              {% endif %}
+            {% endfor %}
+            <td>
+              {% if puede_escribir %}
+              <button class="btn btn-quitar" type="button" onclick="quitarLinea(this)">Quitar</button>
+              {% endif %}
+              {% if linea.DELETE %}<span class="linea-delete">{{ linea.DELETE }}</span>{% endif %}
+              {% for hidden in linea.hidden_fields %}{{ hidden }}{% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <template id="linea-vacia">
+      <tr>
+        {% for field in formset.empty_form.visible_fields %}
+          {% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}
+        {% endfor %}
+        <td>
+          {% if puede_escribir %}
+          <button class="btn btn-quitar" type="button" onclick="quitarLinea(this)">Quitar</button>
+          {% endif %}
+          {% if formset.empty_form.DELETE %}<span class="linea-delete">{{ formset.empty_form.DELETE }}</span>{% endif %}
+          {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        </td>
+      </tr>
+    </template>
+    <div class="form-footer">
+      <div class="registro">Registro <strong id="contador">0</strong> de <strong id="contador-total">0</strong></div>
+      <div class="btns">
+        {% if puede_escribir %}
+        <button class="btn" type="button" onclick="agregarLinea('{{ prefijo }}')">Agregar línea</button>
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        {% endif %}
+        <a class="btn" href="{{ url_lista }}">Cancelar</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

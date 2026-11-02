@@ -52,9 +52,11 @@ def _tipos_en_orden_de_spec():
 
 
 def dec(valor):
+    from apps.core.numeros import formato_cantidad
+
     if valor is None:
         return '—'
-    return f'{valor:.4f}'
+    return formato_cantidad(valor)
 
 
 class CatalogoListView(PantallaMixin, ListView):
