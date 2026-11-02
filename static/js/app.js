@@ -125,7 +125,7 @@ function contarLineas() {
 
 function enlazarAutofiltro() {
   document.querySelectorAll('form[data-autofiltro]').forEach(function (form) {
-    form.querySelectorAll('select, input[type="checkbox"], input[type="radio"]').forEach(function (control) {
+    form.querySelectorAll('select, input[type="checkbox"], input[type="radio"], input[type="date"]').forEach(function (control) {
       control.addEventListener('change', function () {
         form.submit();
       });
@@ -163,13 +163,32 @@ function enlazarPermisos() {
   });
 }
 
+var MESES = [
+  '', 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
+];
+
+function pintarMes() {
+  var fecha = document.getElementById('id_fecha');
+  var mes = document.getElementById('mes-derivado');
+  if (!fecha || !mes) return;
+  var numero = parseInt((fecha.value || '').slice(5, 7), 10);
+  mes.value = MESES[numero] || '';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   contarLineas();
   filtrarInsumos();
   pintarMaquinasRuta();
+  pintarMes();
   enlazarAutofiltro();
   enlazarConfirmacion();
   enlazarPermisos();
+  var fecha = document.getElementById('id_fecha');
+  if (fecha) {
+    fecha.addEventListener('change', pintarMes);
+    fecha.addEventListener('input', pintarMes);
+  }
   document.addEventListener('change', function (event) {
     const nombre = event.target && event.target.name;
     if (nombre && nombre.indexOf('-proceso') !== -1) pintarMaquinasRuta();

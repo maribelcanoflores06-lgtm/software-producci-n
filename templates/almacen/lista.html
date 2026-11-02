@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <h2>{{ cfg.titulo }}</h2>
+    {% if puede_escribir %}
+    <a class="btn btn-primary" href="{{ url_nueva }}">Nuevo</a>
+    {% endif %}
+  </div>
+  <p class="hint">{{ cfg.ayuda }} La nota se numera al guardar: CODALMACEN-AÑO-######.</p>
+  <form method="get" class="form-row" data-autofiltro>
+    <div class="field">
+      <label for="filtro-anio">Año</label>
+      <select id="filtro-anio" name="anio">
+        <option value="">Todos</option>
+        {% for anio in anios %}
+        <option value="{{ anio.pk }}"{% if anio_seleccionado == anio.pk|stringformat:"s" %} selected{% endif %}>{{ anio.anio }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="filtro-almacen">Almacén</label>
+      <select id="filtro-almacen" name="almacen">
+        <option value="">Todos</option>
+        {% for almacen in almacenes %}
+        <option value="{{ almacen.pk }}"{% if almacen_seleccionado == almacen.pk|stringformat:"s" %} selected{% endif %}>{{ almacen.codigo }} · {{ almacen.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field grow">
+      <label for="q">Buscar</label>
+      <input id="q" type="search" name="q" value="{{ q }}" placeholder="Nota, artículo u observación">
+    </div>
+    <button class="btn" type="submit">Buscar</button>
+    {% if q or anio_seleccionado or almacen_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+  </form>
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Nota</th>
+        <th>Fecha</th>
+        {% if cfg.modo == 'transferencia' %}
+        <th>Origen</th><th>Destino</th>
+        {% else %}
+        <th>Almacén</th>
+        {% endif %}
+        {% if cfg.modo == 'ingreso' %}<th>Subtipo</th><th>Proveedor</th>{% endif %}
+        {% if cfg.modo == 'salida' %}<th>Cliente</th>{% endif %}
+        <th>Obs.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nota in notas %}
+      <tr>
+        <td>
+          {% if 'EJEMPLO' in nota.observacion %}<span class="badge-ej">EJEMPLO</span> {% endif %}
+          <a href="{% url detalle_nombre nota.pk %}">{{ nota.numero_nota }}</a>
+        </td>
+        <td>{{ nota.fecha|date:"d/m/Y" }}</td>
+        {% if cfg.modo == 'transferencia' %}
+        <td>{{ nota.almacen_origen.codigo }}</td>
+        <td>{{ nota.almacen_destino.codigo }}</td>
+        {% else %}
+        <td>{{ nota.almacen.codigo }}</td>
+        {% endif %}
+        {% if cfg.modo == 'ingreso' %}
+        <td>{{ nota.get_subtipo_display }}</td>
+        <td>{{ nota.proveedor }}</td>
+        {% endif %}
+        {% if cfg.modo == 'salida' %}<td>{{ nota.cliente|default:"—" }}</td>{% endif %}
+        <td>{{ nota.observacion|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7">No hay notas{% if q or anio_seleccionado or almacen_seleccionado %} con ese filtro{% endif %}.{% if puede_escribir %} Use Nuevo para registrar la primera.{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="form-footer">
+  <div class="registro">
+    {% if page_obj.paginator.count %}
+    Registro <strong>{{ page_obj.start_index }}</strong>–<strong>{{ page_obj.end_index }}</strong> de <strong>{{ page_obj.paginator.count }}</strong>
+    {% else %}
+    Registro <strong>0</strong> de <strong>0</strong>
+    {% endif %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="btns">
+    {% if page_obj.has_previous %}<a class="btn" href="{{ url_anterior }}">Anterior</a>{% endif %}
+    {% if page_obj.has_next %}<a class="btn" href="{{ url_siguiente }}">Siguiente</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

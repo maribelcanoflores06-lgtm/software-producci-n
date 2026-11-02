@@ -1,8 +1,12 @@
+from datetime import date
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.accounts.models import Pantalla, Rol, RolPantalla, Usuario
+from apps.almacen.models import Movimiento
+from apps.almacen.services.kardex import crear_ingreso, crear_salida, crear_transferencia
 from apps.almacen.services.saldo_inicial import registrar_saldo_inicial
 from apps.core.catalogo import (
     PERMISOS_POR_ROL,
@@ -54,6 +58,10 @@ SALDOS_EJEMPLO = [
     ('ALM01', 'AUX-BOT-14', Decimal('1000'), Decimal('0.05')),
     ('ALM01', 'ENV-BOL-P', Decimal('500'), Decimal('0.02')),
 ]
+
+MARCA_INGRESO_HILO = 'EJEMPLO fase 3 · ingreso 100 kg de hilo a S/ 4.00'
+MARCA_TRANSFERENCIA_HILO = 'EJEMPLO fase 3 · transferencia 40 kg de hilo a ALM02'
+MARCA_SALIDA_HILO = 'EJEMPLO fase 3 · salida 5 kg de hilo'
 
 
 def seed_base():
@@ -169,18 +177,21 @@ def seed_ejemplo():
         maestros_nuevos = _asegurar_maestros_ejemplo(anio)
         saldos_nuevos = _asegurar_saldos_ejemplo(anio)
         maquinas_nuevas = _asegurar_maquinas_ejemplo()
+        movimientos_nuevos = _asegurar_movimientos_ejemplo(anio)
     if vacio:
         return True, (
             'Se cargaron los datos de ejemplo del taller textil: almacenes, artículos, '
-            'receta, ruta, máquinas, terceros y saldos iniciales.'
+            'receta, ruta, máquinas, terceros, saldos iniciales y movimientos de almacén.'
         )
-    if maquinas_nuevas and not maestros_nuevos and not saldos_nuevos:
+    if maquinas_nuevas and not maestros_nuevos and not saldos_nuevos and not movimientos_nuevos:
         return True, 'Se agregaron las máquinas de ejemplo.'
     agregados = list(maestros_nuevos)
     if saldos_nuevos:
         agregados.append('saldos iniciales (' + ', '.join(saldos_nuevos) + ')')
     if maquinas_nuevas:
         agregados.append('máquinas')
+    if movimientos_nuevos:
+        agregados.append('movimientos de almacén (' + ', '.join(movimientos_nuevos) + ')')
     if agregados:
         return True, (
             'Se completaron datos de ejemplo que faltaban, sin duplicar: '
@@ -337,3 +348,72 @@ def _asegurar_maquinas_ejemplo():
             MaquinaProceso.objects.get_or_create(maquina=maquina, proceso=procesos[codigo_proceso])
         nuevas = True
     return nuevas
+
+
+def _asegurar_movimientos_ejemplo(anio):
+    """Ingreso, transferencia y salida de ejemplo. No repite una nota ya creada."""
+    if anio.cerrado:
+        return []
+    usuario = Usuario.objects.filter(username='maribel', is_active=True).first()
+    proveedor = Proveedor.objects.filter(codigo='PROV-001', activo=True).first()
+    cliente = Cliente.objects.filter(codigo='CLI-001', activo=True).first()
+    alm01 = Almacen.objects.filter(codigo='ALM01', activo=True, es_proceso=False).first()
+    alm02 = Almacen.objects.filter(codigo='ALM02', activo=True, es_proceso=False).first()
+    hilo = Articulo.objects.filter(codigo='MP-HIL-20/1', activo=True).first()
+    if not all([usuario, proveedor, alm01, alm02, hilo]):
+        return []
+    fecha = date(anio.anio, 11, 1)
+    nuevos = []
+
+    def correr(marca, accion):
+        if Movimiento.objects.filter(observacion=marca).exists():
+            return
+        try:
+            with transaction.atomic():
+                accion()
+        except ValidationError:
+            return
+        nuevos.append(marca)
+
+    def ingreso():
+        crear_ingreso(
+            anio=anio,
+            fecha=fecha,
+            subtipo='COMPRA_NAC',
+            almacen_destino=alm01,
+            proveedor=proveedor,
+            lineas=[{'articulo': hilo, 'cantidad': Decimal('100'), 'costo_unitario': Decimal('4')}],
+            usuario=usuario,
+            tipo_comprobante='FACTURA',
+            serie_doc='F001',
+            numero_doc='00001234',
+            fecha_doc=date(anio.anio, 10, 28),
+            observacion=MARCA_INGRESO_HILO,
+        )
+
+    def transferencia():
+        crear_transferencia(
+            anio=anio,
+            fecha=fecha,
+            almacen_origen=alm01,
+            almacen_destino=alm02,
+            lineas=[{'articulo': hilo, 'cantidad': Decimal('40')}],
+            usuario=usuario,
+            observacion=MARCA_TRANSFERENCIA_HILO,
+        )
+
+    def salida():
+        crear_salida(
+            anio=anio,
+            fecha=fecha,
+            almacen_origen=alm02,
+            lineas=[{'articulo': hilo, 'cantidad': Decimal('5')}],
+            usuario=usuario,
+            cliente=cliente,
+            observacion=MARCA_SALIDA_HILO,
+        )
+
+    correr(MARCA_INGRESO_HILO, ingreso)
+    correr(MARCA_TRANSFERENCIA_HILO, transferencia)
+    correr(MARCA_SALIDA_HILO, salida)
+    return nuevos

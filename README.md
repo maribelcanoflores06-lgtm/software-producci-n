@@ -2,9 +2,9 @@
 
 Prototipo local para la demo a un cliente textil. Corre en una laptop con Python, Django y un archivo SQLite. No hace falta instalar un servidor de base de datos.
 
-**Fase 1** (cimientos) y **Fase 2** (maestros y años): acceso, roles, permisos por pantalla, maestro de años con correlativos en cero, artículos, recetas, clientes, proveedores, trabajadores, almacenes, procesos, máquinas y rutas, más el saldo inicial. La ruta no se ata al producto ni a una máquina: en la orden (fase posterior) se elige la ruta y, para cada proceso, una máquina que pueda realizarlo.
+**Fase 1** (cimientos), **Fase 2** (maestros y años) y **Fase 3** (almacén y kardex): acceso, roles, permisos por pantalla, años con correlativos en cero, artículos, recetas, clientes, proveedores, trabajadores, almacenes, procesos, máquinas y rutas, saldo inicial, ingreso, salida, transferencia, stock y kardex por promedio ponderado. La ruta no se ata al producto ni a una máquina: en la orden (fase posterior) se elige la ruta y, para cada proceso, una máquina que pueda realizarlo.
 
-Almacén operativo, órdenes de producción, costeo y reportes aparecen en el menú según el rol, y la pantalla indica que llegan en una fase posterior. El permiso ya se aplica: quien no tiene la pantalla recibe 403.
+Salida a producción, declaración, órdenes, costeo de fabricación y el reporte BOM siguen en el menú según el rol, y la pantalla indica que llegan en una fase posterior. El permiso ya se aplica: quien no tiene la pantalla recibe 403.
 
 ## Requisitos
 
@@ -66,7 +66,7 @@ Solo la base, sin el catálogo textil:
 python manage.py seed_demo --solo-base
 ```
 
-Con la sesión de `maribel`, el botón **Cargar datos de ejemplo** del menú principal hace lo mismo. Si la base ya tiene datos, completa solo lo que falte del ejemplo y no duplica ni cambia descripciones, el lote de una receta, los pasos de una ruta ni las máquinas ya asignadas.
+Con la sesión de `maribel`, el botón **Cargar datos de ejemplo** del menú principal hace lo mismo. Si la base ya tiene datos, completa solo lo que falte del ejemplo y no duplica ni cambia descripciones, el lote de una receta, los pasos de una ruta, las máquinas ya asignadas ni las notas de almacén ya generadas.
 
 ## Datos de ejemplo
 
@@ -79,7 +79,13 @@ Quedan marcados con la etiqueta **EJEMPLO**. Incluyen el año 2026 activo, los a
 | AUX-BOT-14 | 1000 und | 0.0500 |
 | ENV-BOL-P | 500 und | 0.0200 |
 
-Cada saldo genera una nota `ALM01-2026-00000N` y la primera fila de Kardex de ese artículo. Los demás almacenes quedan con correlativo 0. El correlativo de órdenes (`OP-2026-####`) queda en 0.
+Cada saldo genera una nota `ALM01-2026-00000N` y la primera fila de Kardex de ese artículo. Sobre el hilo, la fase 3 agrega tres notas, sin repetirlas si ya existen:
+
+1. Ingreso a `ALM01` de 100 kg a S/ 4.00 (proveedor `PROV-001`). Con el saldo de 100 kg a S/ 2.00, el promedio queda en **3.0000**.
+2. Transferencia de 40 kg de `ALM01` a `ALM02`, al mismo costo. En origen quedan 160 kg a S/ 3.00.
+3. Salida de 5 kg desde `ALM02`. Quedan 35 kg a S/ 3.00. El promedio de la salida no cambia.
+
+`ALM01` queda con correlativo 6 y `ALM02` con 1. `ALM03`, `PROC01` y el correlativo de órdenes (`OP-2026-####`) siguen en 0. Un ingreso a `PROC01` no está permitido.
 
 ## Pruebas
 
@@ -87,7 +93,7 @@ Cada saldo genera una nota `ALM01-2026-00000N` y la primera fila de Kardex de es
 python manage.py test
 ```
 
-Cubren el criterio de la fase 1 (login, permisos, 403) y el de la fase 2: producto terminado con receta de lote 100, ruta sin producto, `PROC01` de proceso, año 2026 activo, código de almacén único, correlativos en cero al crear año o almacén, saldo inicial con nota y Kardex, y la carga de ejemplo idempotente.
+Cubren el criterio de la fase 1 (login, permisos, 403), el de la fase 2 (receta, ruta sin producto, `PROC01`, año 2026, correlativos y saldo inicial) y el de la fase 3: promedio 100 a S/ 2.00 más 100 a S/ 4.00 = 3.0000, transferencia que mueve el valor, nota `CODALM-AÑO-######`, ingreso sin proveedor, stock insuficiente sin filas huérfanas, almacén de proceso rechazado y stock con la última nota.
 
 ## Respaldo antes de la presentación
 

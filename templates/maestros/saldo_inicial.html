@@ -2,11 +2,11 @@
 {% block content %}
 {% if user.rol.codigo == 'ADMIN' %}
 <div class="panel">
-  <form method="post" action="{% url 'datos_ejemplo' %}" class="ejemplo-form" data-confirmar="¿Cargar los datos de ejemplo que falten? No se duplican ni se modifican los registros ya editados.">
+  <form method="post" action="{% url 'datos_ejemplo' %}" class="ejemplo-form" data-confirmar="¿Cargar los datos de ejemplo que falten? No se duplican ni se modifican los registros ya editados, ni las notas de almacén ya generadas.">
     {% csrf_token %}
     <input type="hidden" name="volver" value="saldo">
     <button class="btn" type="submit">Cargar datos de ejemplo</button>
-    <span class="hint">Solo el rol Admin. Completa almacenes, artículos, receta, ruta, máquinas y saldos iniciales que falten.</span>
+    <span class="hint">Solo el rol Admin. Completa almacenes, artículos, receta, ruta, máquinas, saldos iniciales y movimientos de almacén que falten.</span>
   </form>
 </div>
 {% endif %}

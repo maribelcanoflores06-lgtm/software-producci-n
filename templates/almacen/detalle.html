@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <h2>{{ movimiento.numero_nota }}</h2>
+    {% if 'EJEMPLO' in movimiento.observacion %}<span class="badge-ej">EJEMPLO</span>{% endif %}
+  </div>
+  <p class="hint">Nota confirmada. No se edita: una corrección se hace con otro movimiento. Montos en soles (S/).</p>
+  <div class="form-row">
+    <div class="field"><label>Tipo</label><span class="auto-badge">{{ movimiento.get_tipo_display }}</span></div>
+    {% if movimiento.subtipo %}
+    <div class="field"><label>Subtipo</label><span>{{ movimiento.get_subtipo_display }}</span></div>
+    {% endif %}
+    <div class="field"><label>Año</label><span>{{ movimiento.anio.anio }}</span></div>
+    <div class="field"><label>Mes</label><span>{{ mes }}</span></div>
+    <div class="field"><label>F. registro</label><span>{{ movimiento.fecha|date:"d/m/Y" }}</span></div>
+  </div>
+  <div class="form-row">
+    {% if cfg.modo == 'transferencia' %}
+    <div class="field"><label>Origen</label><span>{{ movimiento.almacen_origen }}</span></div>
+    <div class="field"><label>Destino</label><span>{{ movimiento.almacen_destino }}</span></div>
+    {% else %}
+    <div class="field"><label>Almacén</label><span>{{ movimiento.almacen }}</span></div>
+    {% endif %}
+    {% if movimiento.proveedor %}
+    <div class="field grow"><label>Proveedor</label><span>{{ movimiento.proveedor }}</span></div>
+    {% endif %}
+    {% if movimiento.cliente %}
+    <div class="field grow"><label>Cliente</label><span>{{ movimiento.cliente }}</span></div>
+    {% endif %}
+  </div>
+  {% if movimiento.tipo_comprobante or movimiento.serie_doc or movimiento.numero_doc or movimiento.fecha_doc %}
+  <div class="form-row">
+    <div class="field"><label>Comprobante</label><span>{{ movimiento.tipo_comprobante|default:"—" }}</span></div>
+    <div class="field"><label>Serie</label><span>{{ movimiento.serie_doc|default:"—" }}</span></div>
+    <div class="field"><label>Número</label><span>{{ movimiento.numero_doc|default:"—" }}</span></div>
+    <div class="field"><label>Fecha doc.</label><span>{{ movimiento.fecha_doc|date:"d/m/Y"|default:"—" }}</span></div>
+  </div>
+  {% endif %}
+  {% if movimiento.observacion %}
+  <p class="hint">{{ movimiento.observacion }}</p>
+  {% endif %}
+</div>
+<div class="grid-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Artículo</th><th>Descripción</th><th>UM</th><th>Cantidad</th>
+        <th>Costo unit. S/</th><th>Costo total S/</th><th>Lote</th><th>Ubicación</th><th>Obs.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for linea in detalles %}
+      <tr>
+        <td>{{ linea.articulo.codigo }}</td>
+        <td>{{ linea.articulo.descripcion }}</td>
+        <td>{{ linea.articulo.unidad_medida }}</td>
+        <td class="num">{{ linea.cantidad }}</td>
+        <td class="num">{{ linea.costo_unitario }}</td>
+        <td class="num">{{ linea.costo_total }}</td>
+        <td>{{ linea.lote_ref|default:"—" }}</td>
+        <td>{{ linea.ubicacion_ref|default:"—" }}</td>
+        <td>{{ linea.observacion|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="panel">
+  <h2>Kardex de la nota</h2>
+  <div class="grid-wrap">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Almacén</th><th>Artículo</th><th>Entrada</th><th>Salida</th>
+          <th>Saldo cant.</th><th>Costo mov. S/</th><th>Promedio S/</th>
+          <th>Valor entrada</th><th>Valor salida</th><th>Saldo valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fila in kardex %}
+        <tr>
+          <td>{{ fila.almacen.codigo }}</td>
+          <td>{{ fila.articulo.codigo }}</td>
+          <td class="num">{{ fila.cantidad_entrada }}</td>
+          <td class="num">{{ fila.cantidad_salida }}</td>
+          <td class="num">{{ fila.saldo_cantidad }}</td>
+          <td class="num">{{ fila.costo_unit_mov }}</td>
+          <td class="num">{{ fila.costo_unit_promedio }}</td>
+          <td class="num">{{ fila.valor_entrada }}</td>
+          <td class="num">{{ fila.valor_salida }}</td>
+          <td class="num">{{ fila.saldo_valor }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="form-footer">
+  <div class="registro">Registro <strong>{{ detalles|length }}</strong> de <strong>{{ detalles|length }}</strong> · Total S/ <strong>{{ total }}</strong></div>
+  <div class="btns">
+    <a class="btn" href="{{ url_stock }}">Ver stock</a>
+    <a class="btn" href="{{ url_kardex }}">Ver kardex</a>
+    <a class="btn" href="{{ url_lista }}">Volver</a>
+  </div>
+</div>
+{% endblock %}

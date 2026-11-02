@@ -83,15 +83,22 @@ class TestFase1(TestCase):
         self.assertEqual(lectura.status_code, 403)
 
         stock = cliente.get(reverse('rep.stock'))
-        self.assertContains(stock, 'fase posterior')
-        self.assertContains(stock, 'Stock')
+        self.assertEqual(stock.status_code, 200)
+        self.assertContains(stock, 'Última nota')
+        self.assertNotContains(stock, 'fase posterior')
+        bom = cliente.get(reverse('rep.bom_ruta_op'))
+        self.assertContains(bom, 'fase posterior')
 
-    def test_admin_entra_a_ingreso_como_fase_posterior(self):
+    def test_admin_abre_ingreso_y_la_salida_a_produccion_sigue_pendiente(self):
         cliente, _ok = entrar('maribel', 'demo-admin')
         inicio = cliente.get(reverse('home'))
         self.assertContains(inicio, '/almacen/ingreso/')
         respuesta = cliente.get(reverse('alm.ingreso'))
-        self.assertContains(respuesta, 'fase posterior')
+        self.assertContains(respuesta, 'Ingresos')
+        self.assertContains(respuesta, 'Nuevo')
+        self.assertNotContains(respuesta, 'fase posterior')
+        posterior = cliente.get(reverse('alm.salida_prod'))
+        self.assertContains(posterior, 'fase posterior')
 
     def test_almacenero_consulta_articulos_sin_poder_crearlos(self):
         cliente, _ok = entrar('almacenero', 'demo-alm')
@@ -167,8 +174,8 @@ class TestFase1(TestCase):
         self.assertEqual(Ruta.objects.get(codigo='RUTA-POLO-01').pasos.count(), 5)
         self.assertEqual(CorrelativoOp.objects.get(anio=anio).ultimo, 0)
         self.assertEqual(CorrelativoNota.objects.get(anio=anio, almacen__codigo='PROC01').ultimo, 0)
-        self.assertEqual(CorrelativoNota.objects.get(anio=anio, almacen__codigo='ALM02').ultimo, 0)
-        self.assertEqual(CorrelativoNota.objects.get(anio=anio, almacen__codigo='ALM01').ultimo, 4)
+        self.assertEqual(CorrelativoNota.objects.get(anio=anio, almacen__codigo='ALM02').ultimo, 1)
+        self.assertEqual(CorrelativoNota.objects.get(anio=anio, almacen__codigo='ALM01').ultimo, 6)
         self.assertEqual(Cliente.objects.get(codigo='CLI-001').razon_social, 'Textiles Lima S.A.C.')
         self.assertEqual(Proveedor.objects.get(codigo='PROV-001').razon_social, 'Hilos del Sur S.A.C.')
         self.assertFalse(Proveedor.objects.filter(codigo='CLI-001').exists())
@@ -405,7 +412,7 @@ class TestFase1(TestCase):
             self.assertEqual(saldo.valor, stock.valor)
         self.assertEqual(
             CorrelativoNota.objects.get(anio=siguiente, almacen__codigo='ALM01').ultimo,
-            len(stocks),
+            sum(1 for stock in stocks if stock.almacen.codigo == 'ALM01' and stock.cantidad > 0),
         )
         otra = cliente.post(reverse('admin.anios_cerrar', args=[anio.pk]), follow=True)
         self.assertContains(otra, 'ya está cerrado')

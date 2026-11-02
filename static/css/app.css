@@ -172,6 +172,11 @@ a.dash-card p { font-size: 11px; color: var(--muted); margin: 0; }
 .ejemplo-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .w80 { width: 80px; }
 .btn-quitar { padding: 2px 8px; }
+.auto-badge {
+  display: inline-block; background: #f5f5f5; border: 1px solid var(--border-dark);
+  padding: 3px 8px; font-weight: 700; letter-spacing: .04em; color: var(--muted);
+}
+.field input[readonly] { background: #f5f5f5; color: #444; }
 .maquinas-ruta { margin: 0 0 8px; padding-left: 18px; color: var(--label); }
 .maquinas-ruta li { margin: 2px 0; }
 .linea-delete {
