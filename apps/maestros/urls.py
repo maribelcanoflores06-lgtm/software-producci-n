@@ -2,7 +2,7 @@ from django.urls import path
 
 from apps.core.catalogo import path_de
 from apps.maestros import vistas
-from apps.maestros.lineas import RecetaFormView, RutaFormView
+from apps.maestros.lineas import MaquinaFormView, RecetaFormView, RutaFormView
 
 urlpatterns = [
     path(path_de('mae.recetas'), vistas.RecetaListView.as_view(), name='mae.recetas'),
@@ -11,6 +11,9 @@ urlpatterns = [
     path(path_de('mae.rutas'), vistas.RutaListView.as_view(), name='mae.rutas'),
     path(path_de('mae.rutas') + 'nuevo/', RutaFormView.as_view(), name='mae.rutas_nueva'),
     path(path_de('mae.rutas') + '<int:pk>/', RutaFormView.as_view(), name='mae.rutas_editar'),
+    path(path_de('mae.maquinas'), vistas.MaquinaListView.as_view(), name='mae.maquinas'),
+    path(path_de('mae.maquinas') + 'nuevo/', MaquinaFormView.as_view(), name='mae.maquinas_nueva'),
+    path(path_de('mae.maquinas') + '<int:pk>/', MaquinaFormView.as_view(), name='mae.maquinas_editar'),
     path(path_de('admin.anios'), vistas.AnioListView.as_view(), name='admin.anios'),
     path(path_de('admin.anios') + 'nuevo/', vistas.AnioCreateView.as_view(), name='admin.anios_nueva'),
     path(path_de('admin.anios') + '<int:pk>/cerrar/', vistas.AnioCerrarView.as_view(), name='admin.anios_cerrar'),

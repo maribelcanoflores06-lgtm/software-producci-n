@@ -31,7 +31,7 @@
         </thead>
         <tbody id="lineas-body">
           {% for linea in formset %}
-          <tr>
+          <tr {% if linea.DELETE.value %}hidden{% endif %}>
             {% for field in linea.visible_fields %}
               {% if field.name != 'DELETE' %}
               <td>
@@ -41,11 +41,12 @@
               {% endif %}
             {% endfor %}
             <td>
-              {% if linea.instance.pk and puede_escribir %}
-              <label>{{ linea.DELETE }} Quitar</label>
+              {% if puede_escribir %}
+              <button class="btn btn-quitar" type="button" onclick="quitarLinea(this)">Quitar</button>
               {% endif %}
+              {% if linea.DELETE %}<span class="linea-delete">{{ linea.DELETE }}</span>{% endif %}
+              {% for hidden in linea.hidden_fields %}{{ hidden }}{% endfor %}
             </td>
-            {% for hidden in linea.hidden_fields %}{{ hidden }}{% endfor %}
           </tr>
           {% endfor %}
         </tbody>
@@ -56,8 +57,13 @@
         {% for field in formset.empty_form.visible_fields %}
           {% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}
         {% endfor %}
-        <td></td>
-        {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        <td>
+          {% if puede_escribir %}
+          <button class="btn btn-quitar" type="button" onclick="quitarLinea(this)">Quitar</button>
+          {% endif %}
+          {% if formset.empty_form.DELETE %}<span class="linea-delete">{{ formset.empty_form.DELETE }}</span>{% endif %}
+          {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        </td>
       </tr>
     </template>
     <div class="form-footer">
@@ -71,5 +77,8 @@
       </div>
     </div>
   </form>
+  {% if catalogo_insumos %}
+  {{ catalogo_insumos|json_script:"catalogo-insumos" }}
+  {% endif %}
 </div>
 {% endblock %}

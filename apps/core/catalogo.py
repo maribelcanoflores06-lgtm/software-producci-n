@@ -113,6 +113,15 @@ PANTALLAS = [
         'desc': 'Tejido, teñido, corte y los demás pasos.',
     },
     {
+        'codigo': 'mae.maquinas',
+        'nombre': 'Máquinas',
+        'modulo': 'Maestros',
+        'icono': '🔧',
+        'path': 'maestros/maquinas/',
+        'fase': 1,
+        'desc': 'Equipos y los almacenes de proceso que pueden realizar.',
+    },
+    {
         'codigo': 'mae.rutas',
         'nombre': 'Rutas',
         'modulo': 'Maestros',
@@ -244,6 +253,7 @@ PERMISOS_POR_ROL = {
         'mae.recetas': True,
         'mae.rutas': True,
         'mae.procesos': True,
+        'mae.maquinas': True,
         'mae.clientes': True,
         'mae.articulos': True,
         'prod.ordenes': True,
@@ -311,7 +321,8 @@ TIPOS_MATERIAL = [
 ]
 
 CODIGOS_EJEMPLO = {
-    'ALM01', 'ALM02', 'ALM03', 'PROC01',
+    'ALM01', 'ALM02', 'ALM03', 'PROC01', 'PROCTEN', 'PROCCOS',
+    'MAQ-TELAR-01', 'MAQ-JIGGER-01', 'MAQ-LINEA-01',
     'MP-HIL-20/1', 'MP-TEL-JER', 'AUX-BOT-14', 'ENV-BOL-P', 'PT-POL-PIQ-B',
     'CLI-001', 'PROV-001', 'TR-001',
     'TEJ', 'TEN', 'COR', 'COS', 'ACA',

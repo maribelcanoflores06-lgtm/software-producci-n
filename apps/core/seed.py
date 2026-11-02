@@ -20,6 +20,8 @@ from apps.maestros.models import (
     CorrelativoOp,
     Proceso,
     Proveedor,
+    Maquina,
+    MaquinaProceso,
     Receta,
     RecetaDetalle,
     Ruta,
@@ -110,6 +112,7 @@ def catalogo_vacio():
         Proceso.objects.exists(),
         Ruta.objects.exists(),
         Receta.objects.exists(),
+        Maquina.objects.exists(),
     ])
 
 
@@ -125,7 +128,7 @@ def seed_ejemplo():
         _crear_saldos_ejemplo(anio)
     return True, (
         'Se cargaron los datos de ejemplo del taller textil: almacenes, artículos, '
-        'receta, ruta, terceros y saldos iniciales.'
+        'receta, ruta, máquinas, terceros y saldos iniciales.'
     )
 
 
@@ -135,6 +138,8 @@ def _crear_maestros_ejemplo(anio):
         ('ALM02', 'Materia prima', False),
         ('ALM03', 'Producto terminado', False),
         ('PROC01', 'En proceso tejido', True),
+        ('PROCTEN', 'En proceso teñido', True),
+        ('PROCCOS', 'En proceso costura', True),
     ]
     alm = {}
     for codigo, nombre, proceso in almacenes:
@@ -182,6 +187,29 @@ def _crear_maestros_ejemplo(anio):
     ruta = Ruta.objects.create(codigo='RUTA-POLO-01', nombre='Polo básico', activo=True)
     for secuencia, codigo in enumerate(('TEJ', 'TEN', 'COR', 'COS', 'ACA'), start=1):
         RutaProceso.objects.create(ruta=ruta, proceso=proc[codigo], secuencia=secuencia)
+
+    telar = Maquina.objects.create(
+        codigo='MAQ-TELAR-01',
+        nombre='Telar circular 1',
+        descripcion='Telar de punto para el polo piqué.',
+        activo=True,
+    )
+    MaquinaProceso.objects.create(maquina=telar, proceso=alm['PROC01'])
+    jigger = Maquina.objects.create(
+        codigo='MAQ-JIGGER-01',
+        nombre='Jigger de teñido',
+        descripcion='Teñido de tela jersey.',
+        activo=True,
+    )
+    MaquinaProceso.objects.create(maquina=jigger, proceso=alm['PROCTEN'])
+    linea = Maquina.objects.create(
+        codigo='MAQ-LINEA-01',
+        nombre='Línea polo',
+        descripcion='Cubre tejido y costura del polo.',
+        activo=True,
+    )
+    MaquinaProceso.objects.create(maquina=linea, proceso=alm['PROC01'])
+    MaquinaProceso.objects.create(maquina=linea, proceso=alm['PROCCOS'])
 
     Cliente.objects.create(
         codigo='CLI-001',

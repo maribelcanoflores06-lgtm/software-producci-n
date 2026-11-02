@@ -408,6 +408,74 @@ class RecetaDetalle(models.Model):
         return f'{self.articulo_insumo.codigo} · {self.cantidad_por_lote}'
 
 
+class Maquina(models.Model):
+    """Equipo del taller. Los procesos que puede realizar son almacenes con es_proceso."""
+
+    codigo = models.CharField(
+        'Código',
+        max_length=40,
+        unique=True,
+        error_messages={'unique': 'Ya existe una máquina con este código.'},
+    )
+    nombre = models.CharField('Nombre', max_length=120)
+    descripcion = models.CharField('Descripción', max_length=250, blank=True)
+    activo = models.BooleanField('Activo', default=True)
+    procesos = models.ManyToManyField(
+        Almacen,
+        through='MaquinaProceso',
+        related_name='maquinas',
+        verbose_name='Procesos',
+        limit_choices_to={'es_proceso': True},
+    )
+
+    class Meta:
+        db_table = 'maquina'
+        ordering = ['codigo']
+        verbose_name = 'máquina'
+        verbose_name_plural = 'máquinas'
+
+    def clean(self):
+        super().clean()
+        self.codigo = normalizar_codigo(self.codigo, PATRON_CODIGO, MENSAJE_CODIGO)
+        self.nombre = (self.nombre or '').strip()
+        self.descripcion = (self.descripcion or '').strip()
+        if not self.nombre:
+            raise ValidationError({'nombre': 'El nombre es obligatorio.'})
+
+    def save(self, *args, **kwargs):
+        if self.codigo:
+            self.codigo = self.codigo.strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.codigo} · {self.nombre}'
+
+
+class MaquinaProceso(models.Model):
+    maquina = models.ForeignKey(Maquina, on_delete=models.CASCADE, related_name='asignaciones')
+    proceso = models.ForeignKey(
+        Almacen,
+        verbose_name='Proceso',
+        on_delete=models.PROTECT,
+        related_name='usos_en_maquina',
+    )
+
+    class Meta:
+        db_table = 'maquina_proceso'
+        ordering = ['proceso__codigo', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['maquina', 'proceso'], name='maquina_proceso_unico'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.proceso_id and not self.proceso.es_proceso:
+            raise ValidationError({'proceso': 'Solo puede asignar un almacén de proceso.'})
+
+    def __str__(self):
+        return f'{self.maquina.codigo} · {self.proceso.codigo}'
+
+
 class CorrelativoNota(models.Model):
     anio = models.ForeignKey(Anio, on_delete=models.PROTECT, related_name='correlativos_nota')
     almacen = models.ForeignKey('maestros.Almacen', on_delete=models.PROTECT, related_name='correlativos_nota')
