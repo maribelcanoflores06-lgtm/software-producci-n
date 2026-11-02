@@ -176,9 +176,17 @@ def seed_ejemplo():
         )
     if maquinas_nuevas and not maestros_nuevos and not saldos_nuevos:
         return True, 'Se agregaron las máquinas de ejemplo.'
-    if maestros_nuevos or saldos_nuevos or maquinas_nuevas:
-        return True, 'Se completaron datos de ejemplo que faltaban, sin duplicar.'
-    return True, 'Los datos de ejemplo ya estaban. No se duplicó nada.'
+    agregados = list(maestros_nuevos)
+    if saldos_nuevos:
+        agregados.append('saldos iniciales (' + ', '.join(saldos_nuevos) + ')')
+    if maquinas_nuevas:
+        agregados.append('máquinas')
+    if agregados:
+        return True, (
+            'Se completaron datos de ejemplo que faltaban, sin duplicar: '
+            + ', '.join(agregados) + '.'
+        )
+    return True, 'No faltaba ningún dato de ejemplo. No se duplicó nada.'
 
 
 def _asegurar_maestros_ejemplo(anio):

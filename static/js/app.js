@@ -123,6 +123,32 @@ function contarLineas() {
   if (total) total.textContent = String(n);
 }
 
+function enlazarAutofiltro() {
+  document.querySelectorAll('form[data-autofiltro]').forEach(function (form) {
+    form.querySelectorAll('select, input[type="checkbox"], input[type="radio"]').forEach(function (control) {
+      control.addEventListener('change', function () {
+        form.submit();
+      });
+    });
+    form.querySelectorAll('input[type="search"], input[type="text"]').forEach(function (campo) {
+      campo.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        form.submit();
+      });
+    });
+  });
+}
+
+function enlazarConfirmacion() {
+  document.querySelectorAll('form[data-confirmar]').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      const texto = form.getAttribute('data-confirmar');
+      if (texto && !window.confirm(texto)) event.preventDefault();
+    });
+  });
+}
+
 function enlazarPermisos() {
   document.querySelectorAll('.perm-row').forEach(function (fila) {
     const ver = fila.querySelector('input[name="ver"]');
@@ -141,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function () {
   contarLineas();
   filtrarInsumos();
   pintarMaquinasRuta();
+  enlazarAutofiltro();
+  enlazarConfirmacion();
   enlazarPermisos();
   document.addEventListener('change', function (event) {
     const nombre = event.target && event.target.name;

@@ -1,9 +1,12 @@
 from decimal import Decimal
+from pathlib import Path
 
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 
 from apps.almacen.models import Kardex
+from apps.accounts.models import Pantalla, Rol, RolPantalla, Usuario
 from apps.core.seed import seed_base, seed_ejemplo
 from apps.core.tests.test_fase1 import entrar
 from apps.maestros.models import (
@@ -144,6 +147,84 @@ class TestAceptacionFase2(TestCase):
         })
         self.assertContains(vacio, 'No hay saldos iniciales con ese filtro')
         self.assertEqual(list(vacio.context['saldos']), [])
+
+    def test_los_selectores_filtran_al_cambiar_y_la_busqueda_queda_con_enter(self):
+        cliente, _ok = entrar('maribel', 'demo-admin')
+        js = Path(settings.BASE_DIR, 'static', 'js', 'app.js').read_text(encoding='utf-8')
+        self.assertIn('function enlazarAutofiltro', js)
+        self.assertIn('form[data-autofiltro]', js)
+        self.assertIn('form.submit()', js)
+        self.assertIn("event.key !== 'Enter'", js)
+
+        articulos = cliente.get(reverse('mae.articulos'))
+        self.assertContains(articulos, 'data-autofiltro')
+        self.assertContains(articulos, 'name="tipo"')
+        self.assertContains(articulos, 'name="q"')
+        self.assertContains(articulos, '>Buscar</button>')
+        self.assertNotContains(articulos, 'onchange=')
+        self.assertNotContains(articulos, '>Filtrar</button>')
+
+        almacenes = cliente.get(reverse('mae.almacenes'))
+        self.assertContains(almacenes, 'data-autofiltro')
+        self.assertContains(almacenes, 'name="proceso"')
+        self.assertContains(almacenes, 'name="q"')
+        self.assertContains(almacenes, '>Buscar</button>')
+        self.assertNotContains(almacenes, 'onchange=')
+
+        saldos = cliente.get(reverse('admin.saldo_inicial'))
+        self.assertContains(saldos, 'data-autofiltro')
+        self.assertContains(saldos, 'name="anio"')
+        self.assertContains(saldos, 'name="almacen"')
+        self.assertNotContains(saldos, '>Filtrar</button>')
+        self.assertNotContains(saldos, '>Buscar</button>')
+        self.assertNotContains(saldos, 'onchange=')
+
+    def test_saldo_inicial_ofrece_la_carga_de_ejemplo_solo_al_admin(self):
+        cliente, _ok = entrar('maribel', 'demo-admin')
+        pagina = cliente.get(reverse('admin.saldo_inicial'))
+        self.assertContains(pagina, 'Cargar datos de ejemplo')
+        self.assertContains(pagina, 'data-confirmar')
+        self.assertContains(pagina, 'name="volver" value="saldo"')
+        self.assertContains(pagina, 'csrfmiddlewaretoken')
+        js = Path(settings.BASE_DIR, 'static', 'js', 'app.js').read_text(encoding='utf-8')
+        self.assertIn('function enlazarConfirmacion', js)
+        self.assertIn('window.confirm', js)
+
+        rol = Rol.objects.create(codigo='AUXILIAR', nombre='Auxiliar', activo=True)
+        RolPantalla.objects.create(
+            rol=rol,
+            pantalla=Pantalla.objects.get(codigo='admin.saldo_inicial'),
+            puede_escribir=True,
+        )
+        RolPantalla.objects.create(
+            rol=rol,
+            pantalla=Pantalla.objects.get(codigo='admin.anios'),
+            puede_escribir=True,
+        )
+        Usuario.objects.create_user(
+            username='auxiliar',
+            password='demo-aux',
+            rol=rol,
+            nombres='Auxiliar de prueba',
+        )
+        auxiliar, ok = entrar('auxiliar', 'demo-aux')
+        self.assertTrue(ok)
+        ajena = auxiliar.get(reverse('admin.saldo_inicial'))
+        self.assertEqual(ajena.status_code, 200)
+        self.assertNotContains(ajena, 'Cargar datos de ejemplo')
+        self.assertEqual(auxiliar.post(reverse('datos_ejemplo'), {'volver': 'saldo'}).status_code, 403)
+
+        Trabajador.objects.filter(codigo='TR-001').delete()
+        alta = cliente.post(reverse('datos_ejemplo'), {'volver': 'saldo'}, follow=True)
+        self.assertRedirects(alta, reverse('admin.saldo_inicial'), fetch_redirect_response=False)
+        self.assertContains(alta, 'TR-001')
+        self.assertContains(alta, 'faltaban')
+        self.assertEqual(alta.resolver_match.url_name, 'admin.saldo_inicial')
+
+        otra = cliente.post(reverse('datos_ejemplo'), {'volver': 'saldo'}, follow=True)
+        self.assertContains(otra, 'No faltaba ningún dato de ejemplo')
+        self.assertContains(otra, 'No se duplicó nada')
+        self.assertEqual(Trabajador.objects.filter(codigo='TR-001').count(), 1)
 
     def test_la_ruta_muestra_maquinas_que_pueden_y_no_las_guarda(self):
         tej = Proceso.objects.get(codigo='TEJ')

@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
+{% if user.rol.codigo == 'ADMIN' %}
+<div class="panel">
+  <form method="post" action="{% url 'datos_ejemplo' %}" class="ejemplo-form" data-confirmar="¿Cargar los datos de ejemplo que falten? No se duplican ni se modifican los registros ya editados.">
+    {% csrf_token %}
+    <input type="hidden" name="volver" value="saldo">
+    <button class="btn" type="submit">Cargar datos de ejemplo</button>
+    <span class="hint">Solo el rol Admin. Completa almacenes, artículos, receta, ruta, máquinas y saldos iniciales que falten.</span>
+  </form>
+</div>
+{% endif %}
 <div class="panel">
   <h2>Saldo inicial</h2>
   <p class="hint">Por año y almacén, registre artículo, cantidad y costo unitario en soles. El valor es cantidad × costo. Genera la nota CODALMACEN-AÑO-CORRELATIVO y el primer registro de Kardex del año.</p>
@@ -24,7 +34,7 @@
     </div>
   </form>
 </div>
-<form method="get" class="form-row">
+<form method="get" class="form-row" data-autofiltro>
   <div class="field">
     <label for="filtro-anio">Año</label>
     <select id="filtro-anio" name="anio">
@@ -43,7 +53,6 @@
       {% endfor %}
     </select>
   </div>
-  <button class="btn" type="submit">Filtrar</button>
   {% if anio_seleccionado or almacen_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
 </form>
 <div class="grid-wrap">

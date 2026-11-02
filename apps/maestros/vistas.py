@@ -9,7 +9,7 @@ from django.views.generic.edit import FormView
 
 from apps.almacen.models import Movimiento, MovimientoDetalle, StockActual
 from apps.almacen.services.saldo_inicial import registrar_saldo_inicial
-from apps.core.authz import puede
+from apps.core.authz import puede, respuesta_denegada
 from apps.core.catalogo import CODIGOS_EJEMPLO, TIPOS_MATERIAL, USUARIOS_DEMO_USERNAME
 from apps.core.seed import seed_ejemplo
 from apps.core.views import PantallaMixin, requiere_pantalla
@@ -573,9 +573,14 @@ class SaldoInicialView(PantallaMixin, FormView):
 def datos_ejemplo(request):
     if request.method != 'POST':
         return redirect('home')
+    rol = getattr(request.user, 'rol', None)
+    if rol is None or rol.codigo != 'ADMIN':
+        return respuesta_denegada(request)
     ok, mensaje = seed_ejemplo()
     if ok:
         messages.success(request, mensaje)
     else:
         messages.error(request, mensaje)
+    if request.POST.get('volver') == 'saldo':
+        return redirect('admin.saldo_inicial')
     return redirect('home')
