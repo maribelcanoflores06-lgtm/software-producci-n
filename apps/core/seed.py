@@ -16,8 +16,6 @@ from apps.maestros.models import (
     Anio,
     Articulo,
     Cliente,
-    CorrelativoNota,
-    CorrelativoOp,
     Proceso,
     Proveedor,
     Maquina,
@@ -26,9 +24,11 @@ from apps.maestros.models import (
     RecetaDetalle,
     Ruta,
     RutaProceso,
+    SaldoInicial,
     TipoMaterial,
     Trabajador,
 )
+from apps.maestros.services.correlativos import asegurar_correlativos_anio
 
 PROCESOS_EJEMPLO = [
     ('TEJ', 'Tejido'),
@@ -120,6 +120,31 @@ def asegurar_anio():
     return anio
 
 
+ALMACENES_EJEMPLO = [
+    ('ALM01', 'Almacén de compras', False),
+    ('ALM02', 'Materia prima', False),
+    ('ALM03', 'Producto terminado', False),
+    ('PROC01', 'En proceso tejido', True),
+]
+
+ARTICULOS_EJEMPLO = [
+    ('MP-HIL-20/1', 'Hilo algodón 20/1 crudo', 'MP', 'kg'),
+    ('MP-TEL-JER', 'Tela jersey 180 g/m²', 'MP', 'm'),
+    ('AUX-BOT-14', 'Botón 14 mm blanco', 'AUX', 'und'),
+    ('ENV-BOL-P', 'Bolsa polietileno polo', 'ENV', 'und'),
+    ('PT-POL-PIQ-B', 'Polo piqué blanco M', 'PT', 'und'),
+]
+
+RECETA_LINEAS_EJEMPLO = (
+    ('MP-HIL-20/1', Decimal('25')),
+    ('MP-TEL-JER', Decimal('80')),
+    ('AUX-BOT-14', Decimal('300')),
+    ('ENV-BOL-P', Decimal('100')),
+)
+
+PASOS_RUTA_EJEMPLO = ('TEJ', 'TEN', 'COR', 'COS', 'ACA')
+
+
 def catalogo_vacio():
     return not any([
         Articulo.objects.exists(),
@@ -134,107 +159,153 @@ def catalogo_vacio():
 
 
 def seed_ejemplo():
-    if catalogo_vacio() and not Usuario.objects.filter(username='maribel', is_active=True).exists():
+    """Completa los datos de ejemplo que falten. No duplica ni pisa lo ya editado."""
+    if not Usuario.objects.filter(username='maribel', is_active=True).exists():
         return False, 'Falta el usuario maribel. Ejecute primero: python manage.py seed_demo --solo-base'
-    cargo_catalogo = False
-    if catalogo_vacio():
-        with transaction.atomic():
-            asegurar_tipos()
-            anio = asegurar_anio()
-            _crear_maestros_ejemplo(anio)
-            _crear_saldos_ejemplo(anio)
-        cargo_catalogo = True
+    vacio = catalogo_vacio()
     with transaction.atomic():
+        asegurar_tipos()
+        anio = asegurar_anio()
+        maestros_nuevos = _asegurar_maestros_ejemplo(anio)
+        saldos_nuevos = _asegurar_saldos_ejemplo(anio)
         maquinas_nuevas = _asegurar_maquinas_ejemplo()
-    if cargo_catalogo:
+    if vacio:
         return True, (
             'Se cargaron los datos de ejemplo del taller textil: almacenes, artículos, '
             'receta, ruta, máquinas, terceros y saldos iniciales.'
         )
-    if maquinas_nuevas:
+    if maquinas_nuevas and not maestros_nuevos and not saldos_nuevos:
         return True, 'Se agregaron las máquinas de ejemplo.'
-    return False, 'La base ya tiene maestros. No se cargaron datos de ejemplo.'
+    if maestros_nuevos or saldos_nuevos or maquinas_nuevas:
+        return True, 'Se completaron datos de ejemplo que faltaban, sin duplicar.'
+    return True, 'Los datos de ejemplo ya estaban. No se duplicó nada.'
 
 
-def _crear_maestros_ejemplo(anio):
-    almacenes = [
-        ('ALM01', 'Almacén de compras', False),
-        ('ALM02', 'Materia prima', False),
-        ('ALM03', 'Producto terminado', False),
-        ('PROC01', 'En proceso tejido', True),
-    ]
-    alm = {}
-    for codigo, nombre, proceso in almacenes:
-        alm[codigo] = Almacen.objects.create(codigo=codigo, nombre=nombre, es_proceso=proceso, activo=True)
-        CorrelativoNota.objects.get_or_create(anio=anio, almacen=alm[codigo], defaults={'ultimo': 0})
-    CorrelativoOp.objects.get_or_create(anio=anio, defaults={'ultimo': 0})
+def _asegurar_maestros_ejemplo(anio):
+    nuevos = []
+    for codigo, nombre, es_proceso in ALMACENES_EJEMPLO:
+        _almacen, creado = Almacen.objects.get_or_create(
+            codigo=codigo,
+            defaults={'nombre': nombre, 'es_proceso': es_proceso, 'activo': True},
+        )
+        if creado:
+            nuevos.append(codigo)
+    asegurar_correlativos_anio(anio)
 
     tipos = {t.codigo: t for t in TipoMaterial.objects.all()}
-    articulos = [
-        ('MP-HIL-20/1', 'Hilo algodón 20/1 crudo', 'MP', 'kg'),
-        ('MP-TEL-JER', 'Tela jersey 180 g/m²', 'MP', 'm'),
-        ('AUX-BOT-14', 'Botón 14 mm blanco', 'AUX', 'und'),
-        ('ENV-BOL-P', 'Bolsa polietileno polo', 'ENV', 'und'),
-        ('PT-POL-PIQ-B', 'Polo piqué blanco M', 'PT', 'und'),
-    ]
-    art = {}
-    for codigo, descripcion, tipo, um in articulos:
-        art[codigo] = Articulo.objects.create(
+    articulos = {}
+    for codigo, descripcion, tipo, um in ARTICULOS_EJEMPLO:
+        articulo, creado = Articulo.objects.get_or_create(
             codigo=codigo,
-            descripcion=descripcion,
-            tipo_material=tipos[tipo],
-            unidad_medida=um,
-            activo=True,
+            defaults={
+                'descripcion': descripcion,
+                'tipo_material': tipos[tipo],
+                'unidad_medida': um,
+                'activo': True,
+            },
         )
+        articulos[codigo] = articulo
+        if creado:
+            nuevos.append(codigo)
 
-    receta = Receta.objects.create(articulo_pt=art['PT-POL-PIQ-B'], lote_base=Decimal('100'), activo=True)
-    for codigo, cantidad in (
-        ('MP-HIL-20/1', Decimal('25')),
-        ('MP-TEL-JER', Decimal('80')),
-        ('AUX-BOT-14', Decimal('300')),
-        ('ENV-BOL-P', Decimal('100')),
-    ):
-        RecetaDetalle.objects.create(receta=receta, articulo_insumo=art[codigo], cantidad_por_lote=cantidad)
+    pt = articulos['PT-POL-PIQ-B']
+    if pt.tipo_material.codigo == 'PT':
+        receta, creada = Receta.objects.get_or_create(
+            articulo_pt=pt,
+            defaults={'lote_base': Decimal('100'), 'activo': True},
+        )
+        if creada:
+            nuevos.append('receta')
+        if creada or not receta.detalles.exists():
+            for codigo, cantidad in RECETA_LINEAS_EJEMPLO:
+                insumo = articulos[codigo]
+                if insumo.pk == pt.pk:
+                    continue
+                RecetaDetalle.objects.get_or_create(
+                    receta=receta,
+                    articulo_insumo=insumo,
+                    defaults={'cantidad_por_lote': cantidad},
+                )
 
     for codigo, nombre in PROCESOS_EJEMPLO:
-        Proceso.objects.create(codigo=codigo, nombre=nombre, activo=True)
-    ruta = Ruta.objects.create(codigo='RUTA-POLO-01', nombre='Polo básico', activo=True)
-    procesos_ruta = {p.codigo: p for p in Proceso.objects.filter(codigo__in=('TEJ', 'TEN', 'COR', 'COS', 'ACA'))}
-    for secuencia, codigo in enumerate(('TEJ', 'TEN', 'COR', 'COS', 'ACA'), start=1):
-        RutaProceso.objects.create(ruta=ruta, proceso=procesos_ruta[codigo], secuencia=secuencia)
+        _proceso, creado = Proceso.objects.get_or_create(
+            codigo=codigo,
+            defaults={'nombre': nombre, 'activo': True},
+        )
+        if creado:
+            nuevos.append(codigo)
 
-    Cliente.objects.create(
+    ruta, ruta_creada = Ruta.objects.get_or_create(
+        codigo='RUTA-POLO-01',
+        defaults={'nombre': 'Polo básico', 'activo': True},
+    )
+    if ruta_creada:
+        nuevos.append('RUTA-POLO-01')
+    if ruta_creada or not ruta.pasos.exists():
+        procesos = {p.codigo: p for p in Proceso.objects.filter(codigo__in=PASOS_RUTA_EJEMPLO)}
+        for secuencia, codigo in enumerate(PASOS_RUTA_EJEMPLO, start=1):
+            RutaProceso.objects.get_or_create(
+                ruta=ruta,
+                secuencia=secuencia,
+                defaults={'proceso': procesos[codigo]},
+            )
+
+    _cliente, creado = Cliente.objects.get_or_create(
         codigo='CLI-001',
-        ruc_documento='20555111222',
-        razon_social='Textiles Lima S.A.C.',
-        activo=True,
+        defaults={
+            'ruc_documento': '20555111222',
+            'razon_social': 'Textiles Lima S.A.C.',
+            'activo': True,
+        },
     )
-    Proveedor.objects.create(
+    if creado:
+        nuevos.append('CLI-001')
+    _proveedor, creado = Proveedor.objects.get_or_create(
         codigo='PROV-001',
-        ruc_documento='20123456789',
-        razon_social='Hilos del Sur S.A.C.',
-        activo=True,
+        defaults={
+            'ruc_documento': '20123456789',
+            'razon_social': 'Hilos del Sur S.A.C.',
+            'activo': True,
+        },
     )
-    Trabajador.objects.create(
+    if creado:
+        nuevos.append('PROV-001')
+    _trabajador, creado = Trabajador.objects.get_or_create(
         codigo='TR-001',
-        nombres='Juan Pérez',
-        tipo_documento=Trabajador.DNI,
-        numero_documento='12345678',
-        activo=True,
+        defaults={
+            'nombres': 'Juan Pérez',
+            'tipo_documento': Trabajador.DNI,
+            'numero_documento': '12345678',
+            'activo': True,
+        },
     )
+    if creado:
+        nuevos.append('TR-001')
+    return nuevos
 
 
-def _crear_saldos_ejemplo(anio):
+def _asegurar_saldos_ejemplo(anio):
+    if anio.cerrado:
+        return []
     usuario = Usuario.objects.get(username='maribel')
+    nuevos = []
     for codigo_alm, codigo_art, cantidad, costo in SALDOS_EJEMPLO:
+        almacen = Almacen.objects.filter(codigo=codigo_alm).first()
+        articulo = Articulo.objects.filter(codigo=codigo_art).first()
+        if almacen is None or articulo is None:
+            continue
+        if SaldoInicial.objects.filter(anio=anio, almacen=almacen, articulo=articulo).exists():
+            continue
         registrar_saldo_inicial(
             anio=anio,
-            almacen=Almacen.objects.get(codigo=codigo_alm),
-            articulo=Articulo.objects.get(codigo=codigo_art),
+            almacen=almacen,
+            articulo=articulo,
             cantidad=cantidad,
             costo_unitario=costo,
             usuario=usuario,
         )
+        nuevos.append(f'{codigo_alm}:{codigo_art}')
+    return nuevos
 
 
 def _asegurar_maquinas_ejemplo():

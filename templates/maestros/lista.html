@@ -19,12 +19,22 @@
       </select>
     </div>
     {% endif %}
+    {% if filtro_es_proceso %}
+    <div class="field">
+      <label for="proceso">Tipo de almacén</label>
+      <select id="proceso" name="proceso" onchange="this.form.submit()">
+        <option value=""{% if not proceso_seleccionado %} selected{% endif %}>Todos</option>
+        <option value="no"{% if proceso_seleccionado == 'no' %} selected{% endif %}>Normal</option>
+        <option value="si"{% if proceso_seleccionado == 'si' %} selected{% endif %}>De proceso</option>
+      </select>
+    </div>
+    {% endif %}
     <div class="field grow">
       <label for="q">Buscar</label>
       <input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, nombre o descripción">
     </div>
     <button class="btn" type="submit">Buscar</button>
-    {% if q or tipo_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+    {% if q or tipo_seleccionado or proceso_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
   </form>
   {% if mostrar_tipos and tipos %}
   <p class="hint">Tipos de material fijos, solo consulta:

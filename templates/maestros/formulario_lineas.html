@@ -66,6 +66,11 @@
         </td>
       </tr>
     </template>
+    {% if catalogo_maquinas %}
+    <p class="hint">En la orden de producción se elige esta ruta y, para cada proceso, una máquina que pueda realizarlo. La ruta no guarda esa elección.</p>
+    <ul id="maquinas-ruta" class="maquinas-ruta"></ul>
+    {{ catalogo_maquinas|json_script:"catalogo-maquinas" }}
+    {% endif %}
     <div class="form-footer">
       <div class="registro">Registro <strong id="contador">0</strong> de <strong id="contador-total">0</strong></div>
       <div class="btns">

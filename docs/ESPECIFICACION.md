@@ -875,3 +875,11 @@ Todas las funciones de escritura: `transaction.atomic()`, validan RB-* antes de 
 ## Adenda (2026-11-01): Carga de datos iniciales para la demo
 - Pantalla "Saldo inicial" (rol Admin): por año y almacén, registrar artículo, cantidad y costo unitario (S/). Genera un movimiento tipo SALDO_INICIAL que entra al Kardex como primer registro del año.
 - Opción adicional: botón "Cargar datos de ejemplo" (Admin) que ejecuta el seed de la demo (maestros, recetas, rutas y saldos iniciales), solo si la BD está vacía.
+
+## Adenda (2026-11-02): Semilla idempotente y máquina por proceso
+
+Decisión de la usuaria, posterior a la adenda anterior:
+
+- `seed_demo` y el botón **Cargar datos de ejemplo** completan los registros de ejemplo que falten aunque la base ya tenga otros datos. No duplican filas ni pisan ediciones (descripción, lote base, pasos de ruta, asignaciones de máquina, correlativos ya usados).
+- Al crear un año o un almacén quedan correlativos en cero (`correlativo_op` por año y `correlativo_nota` por año y almacén). Una migración de datos rellena esas filas en bases que ya existían.
+- La ruta sigue sin producto y sin máquina. En la orden de producción se elegirá la ruta y, para cada proceso, una máquina activa que pueda realizarlo (`maquina_proceso`). La pantalla de ruta solo muestra esas máquinas; no guarda la elección.

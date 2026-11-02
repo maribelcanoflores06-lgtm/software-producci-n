@@ -2,7 +2,7 @@
 
 Prototipo local para la demo a un cliente textil. Corre en una laptop con Python, Django y un archivo SQLite. No hace falta instalar un servidor de base de datos.
 
-**Fase 1** (esta entrega): acceso, roles, permisos por pantalla, maestro de años y maestros base (artículos, recetas, clientes, proveedores, trabajadores, almacenes, procesos y rutas), más el saldo inicial y la carga de datos de ejemplo.
+**Fase 1** (cimientos) y **Fase 2** (maestros y años): acceso, roles, permisos por pantalla, maestro de años con correlativos en cero, artículos, recetas, clientes, proveedores, trabajadores, almacenes, procesos, máquinas y rutas, más el saldo inicial. La ruta no se ata al producto ni a una máquina: en la orden (fase posterior) se elige la ruta y, para cada proceso, una máquina que pueda realizarlo.
 
 Almacén operativo, órdenes de producción, costeo y reportes aparecen en el menú según el rol, y la pantalla indica que llegan en una fase posterior. El permiso ya se aplica: quien no tiene la pantalla recibe 403.
 
@@ -66,7 +66,7 @@ Solo la base, sin el catálogo textil:
 python manage.py seed_demo --solo-base
 ```
 
-Con la sesión de `maribel`, el botón **Cargar datos de ejemplo** del menú principal hace lo mismo, y solo si todavía no hay artículos, almacenes, clientes, proveedores, trabajadores, procesos ni rutas.
+Con la sesión de `maribel`, el botón **Cargar datos de ejemplo** del menú principal hace lo mismo. Si la base ya tiene datos, completa solo lo que falte del ejemplo y no duplica ni cambia descripciones, el lote de una receta, los pasos de una ruta ni las máquinas ya asignadas.
 
 ## Datos de ejemplo
 
@@ -87,7 +87,7 @@ Cada saldo genera una nota `ALM01-2026-00000N` y la primera fila de Kardex de es
 python manage.py test
 ```
 
-Cubren el criterio de la fase 1: login de los cuatro usuarios, menú de Consulta sin ingreso, POST a ingreso en 403, receta por lote 100, ruta sin producto, `PROC01` de proceso, año 2026 activo, código de almacén único, saldo inicial con nota y Kardex, cierre de año y la carga de ejemplo una sola vez.
+Cubren el criterio de la fase 1 (login, permisos, 403) y el de la fase 2: producto terminado con receta de lote 100, ruta sin producto, `PROC01` de proceso, año 2026 activo, código de almacén único, correlativos en cero al crear año o almacén, saldo inicial con nota y Kardex, y la carga de ejemplo idempotente.
 
 ## Respaldo antes de la presentación
 

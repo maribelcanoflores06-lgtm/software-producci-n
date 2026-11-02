@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="banner-ej">Prototipo local para la demo textil. Fase 1: acceso, permisos, años y maestros. Los registros con etiqueta <strong>EJEMPLO</strong> son ficticios.</div>
+<div class="banner-ej">Prototipo local para la demo textil. Fases 1 y 2: acceso, permisos, años, maestros y saldos iniciales. Los registros con etiqueta <strong>EJEMPLO</strong> son ficticios.</div>
 <div class="panel">
   <h2>Menú principal</h2>
   <p class="hint">El menú lateral muestra solo las pantallas de su rol. Almacén operativo, órdenes y reportes se abren en las fases siguientes, con el mismo permiso.</p>
@@ -8,7 +8,7 @@
   <form method="post" action="{% url 'datos_ejemplo' %}" class="ejemplo-form">
     {% csrf_token %}
     <button class="btn" type="submit">Cargar datos de ejemplo</button>
-    <span class="hint">Carga almacenes, artículos textiles, receta, ruta y saldos iniciales. Solo corre si esos maestros todavía están vacíos.</span>
+    <span class="hint">Completa almacenes, artículos, receta, ruta, máquinas y saldos iniciales que falten. Si ya están, no los duplica ni pisa lo editado.</span>
   </form>
   {% endif %}
 </div>
