@@ -40,9 +40,14 @@ class Anio(models.Model):
         verbose_name_plural = 'años'
 
     def save(self, *args, **kwargs):
+        nuevo = self._state.adding
         super().save(*args, **kwargs)
         if self.activo:
             type(self).objects.exclude(pk=self.pk).update(activo=False)
+        if nuevo:
+            from apps.maestros.services.correlativos import asegurar_correlativos_anio
+
+            asegurar_correlativos_anio(self)
 
     def __str__(self):
         return str(self.anio)
@@ -243,9 +248,14 @@ class Almacen(models.Model):
             raise ValidationError('No se puede desactivar un almacén con stock mayor a cero.')
 
     def save(self, *args, **kwargs):
+        nuevo = self._state.adding
         if self.codigo:
             self.codigo = self.codigo.strip().upper()
         super().save(*args, **kwargs)
+        if nuevo:
+            from apps.maestros.services.correlativos import asegurar_correlativos_almacen
+
+            asegurar_correlativos_almacen(self)
 
     def __str__(self):
         marca = ' · proceso' if self.es_proceso else ''
@@ -295,7 +305,11 @@ class Proceso(models.Model):
 
 
 class Ruta(models.Model):
-    """La ruta no se asocia al producto terminado. Se elige al crear la orden."""
+    """Secuencia de procesos, independiente del producto y de la máquina.
+
+    En la orden de producción se elige la ruta y, para cada proceso, una máquina
+    activa que pueda realizarlo. Esa elección no se guarda en la ruta.
+    """
 
     codigo = models.CharField(
         'Código',

@@ -29,6 +29,7 @@ from apps.maestros.models import (
     Ruta,
     RutaProceso,
 )
+from apps.maestros.services.maquinas import catalogo_maquinas_por_proceso
 
 
 def _solo(request, codigo):
@@ -174,7 +175,8 @@ class RutaFormView(PantallaMixin, TemplateView):
             'prefijo': 'pasos',
             'sin_cabecera': False,
             'texto_vacio': '',
-            'ayuda': 'La ruta es independiente del producto terminado. Ordena procesos, no artículos.',
+            'ayuda': 'La ruta es independiente del producto terminado. Ordena procesos, no artículos ni máquinas.',
+            'catalogo_maquinas': catalogo_maquinas_por_proceso(),
         })
 
     def get(self, request, *args, **kwargs):

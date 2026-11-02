@@ -7,15 +7,25 @@
     <a class="btn btn-primary" href="{{ url_crear }}">Nuevo</a>
     {% endif %}
   </div>
-  <form method="get" class="form-row">
+  <form method="get" class="form-row" data-autofiltro>
     {% if mostrar_tipos and tipos %}
     <div class="field">
       <label for="tipo">Tipo de artículo</label>
-      <select id="tipo" name="tipo" onchange="this.form.submit()">
+      <select id="tipo" name="tipo">
         <option value=""{% if not tipo_seleccionado %} selected{% endif %}>Todos</option>
         {% for tipo in tipos %}
         <option value="{{ tipo.codigo }}"{% if tipo_seleccionado == tipo.codigo %} selected{% endif %}>{{ tipo.codigo }} · {{ tipo.nombre }}</option>
         {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    {% if filtro_es_proceso %}
+    <div class="field">
+      <label for="proceso">Tipo de almacén</label>
+      <select id="proceso" name="proceso">
+        <option value=""{% if not proceso_seleccionado %} selected{% endif %}>Todos</option>
+        <option value="no"{% if proceso_seleccionado == 'no' %} selected{% endif %}>Normal</option>
+        <option value="si"{% if proceso_seleccionado == 'si' %} selected{% endif %}>De proceso</option>
       </select>
     </div>
     {% endif %}
@@ -24,7 +34,7 @@
       <input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, nombre o descripción">
     </div>
     <button class="btn" type="submit">Buscar</button>
-    {% if q or tipo_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+    {% if q or tipo_seleccionado or proceso_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
   </form>
   {% if mostrar_tipos and tipos %}
   <p class="hint">Tipos de material fijos, solo consulta:

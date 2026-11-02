@@ -9,6 +9,7 @@ function agregarLinea(prefix) {
   total.value = String(parseInt(index, 10) + 1);
   filtrarInsumos();
   contarLineas();
+  pintarMaquinasRuta();
 }
 
 function quitarLinea(boton) {
@@ -22,6 +23,7 @@ function quitarLinea(boton) {
   fila.hidden = true;
   renumerarSecuencias();
   contarLineas();
+  pintarMaquinasRuta();
 }
 
 function renumerarSecuencias() {
@@ -76,12 +78,75 @@ function filtrarInsumos() {
   }
 }
 
+function pintarMaquinasRuta() {
+  const nodo = document.getElementById('catalogo-maquinas');
+  const lista = document.getElementById('maquinas-ruta');
+  if (!nodo || !lista) return;
+  let catalogo;
+  try {
+    catalogo = JSON.parse(nodo.textContent);
+  } catch (error) {
+    return;
+  }
+  lista.innerHTML = '';
+  const filas = document.querySelectorAll('#lineas-body tr:not([hidden])');
+  filas.forEach(function (fila) {
+    const select = fila.querySelector('select[name$="-proceso"]');
+    const secuencia = fila.querySelector('input[name$="-secuencia"]');
+    if (!select) return;
+    const opcion = select.options[select.selectedIndex];
+    const etiqueta = opcion && opcion.value ? opcion.textContent : '';
+    const numero = secuencia && secuencia.value ? secuencia.value + ' · ' : '';
+    const item = document.createElement('li');
+    if (!select.value) {
+      item.textContent = numero + 'Elija un proceso para ver las máquinas que pueden realizarlo.';
+    } else {
+      const maquinas = catalogo[String(select.value)] || [];
+      if (!maquinas.length) {
+        item.textContent = numero + etiqueta + ' — ninguna máquina activa puede realizarlo.';
+      } else {
+        const nombres = maquinas.map(function (maquina) {
+          return maquina.codigo + ' ' + maquina.nombre;
+        }).join(', ');
+        item.textContent = numero + etiqueta + ' — ' + nombres;
+      }
+    }
+    lista.appendChild(item);
+  });
+}
+
 function contarLineas() {
   const n = document.querySelectorAll('#lineas-body tr:not([hidden])').length;
   const contador = document.getElementById('contador');
   const total = document.getElementById('contador-total');
   if (contador) contador.textContent = String(n);
   if (total) total.textContent = String(n);
+}
+
+function enlazarAutofiltro() {
+  document.querySelectorAll('form[data-autofiltro]').forEach(function (form) {
+    form.querySelectorAll('select, input[type="checkbox"], input[type="radio"]').forEach(function (control) {
+      control.addEventListener('change', function () {
+        form.submit();
+      });
+    });
+    form.querySelectorAll('input[type="search"], input[type="text"]').forEach(function (campo) {
+      campo.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        form.submit();
+      });
+    });
+  });
+}
+
+function enlazarConfirmacion() {
+  document.querySelectorAll('form[data-confirmar]').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      const texto = form.getAttribute('data-confirmar');
+      if (texto && !window.confirm(texto)) event.preventDefault();
+    });
+  });
 }
 
 function enlazarPermisos() {
@@ -101,7 +166,14 @@ function enlazarPermisos() {
 document.addEventListener('DOMContentLoaded', function () {
   contarLineas();
   filtrarInsumos();
+  pintarMaquinasRuta();
+  enlazarAutofiltro();
+  enlazarConfirmacion();
   enlazarPermisos();
+  document.addEventListener('change', function (event) {
+    const nombre = event.target && event.target.name;
+    if (nombre && nombre.indexOf('-proceso') !== -1) pintarMaquinasRuta();
+  });
   const producto = document.getElementById('id_articulo_pt');
   if (producto) producto.addEventListener('change', filtrarInsumos);
 });

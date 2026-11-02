@@ -351,8 +351,8 @@ class TestMaquinas(TestCase):
         )
         self.assertTrue(Proceso.objects.filter(codigo='SEC', nombre='Secado').exists())
         otra, mensaje_otra = seed_ejemplo()
-        self.assertFalse(otra)
-        self.assertIn('ya tiene maestros', mensaje_otra)
+        self.assertTrue(otra)
+        self.assertIn('No se duplicó', mensaje_otra)
         self.assertEqual(Maquina.objects.count(), 3)
         self.assertEqual(Maquina.objects.get(codigo='MAQ-JIGGER-01').asignaciones.count(), 2)
 

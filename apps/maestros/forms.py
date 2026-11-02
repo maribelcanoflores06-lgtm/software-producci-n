@@ -295,7 +295,10 @@ class RutaForm(CodigoForm):
         model = Ruta
         fields = ['codigo', 'nombre', 'activo']
         help_texts = {
-            'nombre': 'La ruta no se ata al producto. Se elige al crear la orden de producción.',
+            'nombre': (
+                'No se ata al producto ni a una máquina. En la orden se elige la ruta '
+                'y, para cada proceso, una máquina que pueda realizarlo.'
+            ),
         }
 
 

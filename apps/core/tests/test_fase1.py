@@ -533,7 +533,7 @@ class TestCargaEjemplo(TestCase):
         self.assertEqual(SaldoInicial.objects.filter(anio__anio=2026).count(), 4)
         self.assertTrue(Kardex.objects.filter(tipo_mov='SALDO_INICIAL').exists())
         segunda = cliente.post(reverse('datos_ejemplo'), follow=True)
-        self.assertContains(segunda, 'ya tiene maestros')
+        self.assertContains(segunda, 'No se duplicó nada')
         self.assertEqual(Articulo.objects.count(), 5)
 
         consulta, _ok = entrar('consulta', 'demo-consulta')

@@ -9,7 +9,7 @@ from django.views.generic.edit import FormView
 
 from apps.almacen.models import Movimiento, MovimientoDetalle, StockActual
 from apps.almacen.services.saldo_inicial import registrar_saldo_inicial
-from apps.core.authz import puede
+from apps.core.authz import puede, respuesta_denegada
 from apps.core.catalogo import CODIGOS_EJEMPLO, TIPOS_MATERIAL, USUARIOS_DEMO_USERNAME
 from apps.core.seed import seed_ejemplo
 from apps.core.views import PantallaMixin, requiere_pantalla
@@ -70,6 +70,7 @@ class CatalogoListView(PantallaMixin, ListView):
     url_editar = None
     titulo = ''
     mostrar_tipos = False
+    filtro_es_proceso = False
     ejemplo_attr = 'codigo'
     enlace_pantallas = False
 
@@ -91,6 +92,12 @@ class CatalogoListView(PantallaMixin, ListView):
             tipo = self.request.GET.get('tipo', '').strip().upper()
             if tipo and tipo != 'TODOS':
                 qs = qs.filter(tipo_material__codigo=tipo)
+        if self.filtro_es_proceso:
+            marca = self.request.GET.get('proceso', '').strip().lower()
+            if marca == 'si':
+                qs = qs.filter(es_proceso=True)
+            elif marca == 'no':
+                qs = qs.filter(es_proceso=False)
         return qs
 
     def es_ejemplo(self, obj):
@@ -116,14 +123,21 @@ class CatalogoListView(PantallaMixin, ListView):
             if tipo == 'TODOS':
                 tipo = ''
         pagina = ctx.get('page_obj')
+        proceso = ''
+        if self.filtro_es_proceso:
+            proceso = self.request.GET.get('proceso', '').strip().lower()
+            if proceso not in {'si', 'no'}:
+                proceso = ''
         ctx.update({
             'filas': filas,
             'encabezados': [titulo for titulo, _ in self.columnas],
             'q': self.request.GET.get('q', '').strip(),
             'tipo_seleccionado': tipo,
+            'proceso_seleccionado': proceso,
             'titulo': self.titulo,
             'url_crear': reverse(self.url_crear) if self.url_crear else None,
             'mostrar_tipos': self.mostrar_tipos,
+            'filtro_es_proceso': self.filtro_es_proceso,
             'tipos': _tipos_en_orden_de_spec() if self.mostrar_tipos else None,
             'url_anterior': _enlace_pagina(self.request, pagina.previous_page_number()) if pagina and pagina.has_previous() else '',
             'url_siguiente': _enlace_pagina(self.request, pagina.next_page_number()) if pagina and pagina.has_next() else '',
@@ -186,6 +200,7 @@ def _armar(cfg):
         url_editar = cfg['pantalla'] + '_editar'
         titulo = cfg['titulo']
         mostrar_tipos = cfg.get('tipos', False)
+        filtro_es_proceso = cfg.get('filtro_proceso', False)
 
     class Crear(CatalogoCreateView):
         model = cfg['model']
@@ -297,6 +312,7 @@ CATALOGOS = [
         'titulo_editar': 'Editar almacén',
         'mensaje': 'Almacén guardado.',
         'search': ('codigo', 'nombre'),
+        'filtro_proceso': True,
         'columnas': [
             ('Código', lambda o: o.codigo),
             ('Nombre', lambda o: o.nombre),
@@ -379,19 +395,25 @@ class RutaListView(CatalogoListView):
     titulo = 'Rutas'
     search_fields = ('codigo', 'nombre')
     ordering = ('codigo',)
-    prefetch_related_fields = ('pasos__proceso',)
+    prefetch_related_fields = ('pasos__proceso__maquinas',)
     url_crear = 'mae.rutas_nueva'
     url_editar = 'mae.rutas_editar'
     columnas = [
         ('Código', lambda o: o.codigo),
         ('Nombre', lambda o: o.nombre),
-        ('Secuencia', lambda o: _resumen_ruta(o)),
+        ('Procesos y máquinas que pueden', lambda o: _resumen_ruta(o)),
         ('Activo', lambda o: si_no(o.activo)),
     ]
 
 
 def _resumen_ruta(ruta):
-    partes = [f'{paso.secuencia} {paso.proceso.codigo}' for paso in ruta.pasos.all()]
+    partes = []
+    for paso in ruta.pasos.all():
+        maquinas = [maquina.codigo for maquina in paso.proceso.maquinas.all() if maquina.activo]
+        if maquinas:
+            partes.append(f'{paso.secuencia} {paso.proceso.codigo} ({", ".join(maquinas)})')
+        else:
+            partes.append(f'{paso.secuencia} {paso.proceso.codigo} (sin máquina)')
     return ' → '.join(partes) if partes else '—'
 
 
@@ -499,6 +521,16 @@ class SaldoInicialView(PantallaMixin, FormView):
         saldos = SaldoInicial.objects.select_related('anio', 'almacen', 'articulo').order_by(
             '-anio__anio', 'almacen__codigo', 'articulo__codigo'
         )
+        anio_sel = self.request.GET.get('anio', '').strip()
+        almacen_sel = self.request.GET.get('almacen', '').strip()
+        if anio_sel.isdigit():
+            saldos = saldos.filter(anio_id=int(anio_sel))
+        else:
+            anio_sel = ''
+        if almacen_sel.isdigit():
+            saldos = saldos.filter(almacen_id=int(almacen_sel))
+        else:
+            almacen_sel = ''
         notas = {
             (detalle.movimiento.anio_id, detalle.movimiento.almacen_id, detalle.articulo_id): detalle.movimiento.numero_nota
             for detalle in MovimientoDetalle.objects.filter(
@@ -513,6 +545,10 @@ class SaldoInicialView(PantallaMixin, FormView):
             }
             for saldo in saldos
         ]
+        ctx['anios_filtro'] = Anio.objects.order_by('-anio')
+        ctx['almacenes_filtro'] = Almacen.objects.order_by('codigo')
+        ctx['anio_seleccionado'] = anio_sel
+        ctx['almacen_seleccionado'] = almacen_sel
         return ctx
 
     def form_valid(self, form):
@@ -537,9 +573,14 @@ class SaldoInicialView(PantallaMixin, FormView):
 def datos_ejemplo(request):
     if request.method != 'POST':
         return redirect('home')
+    rol = getattr(request.user, 'rol', None)
+    if rol is None or rol.codigo != 'ADMIN':
+        return respuesta_denegada(request)
     ok, mensaje = seed_ejemplo()
     if ok:
         messages.success(request, mensaje)
     else:
         messages.error(request, mensaje)
+    if request.POST.get('volver') == 'saldo':
+        return redirect('admin.saldo_inicial')
     return redirect('home')
