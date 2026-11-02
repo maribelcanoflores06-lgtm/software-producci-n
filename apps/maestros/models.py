@@ -409,7 +409,7 @@ class RecetaDetalle(models.Model):
 
 
 class Maquina(models.Model):
-    """Equipo del taller. Los procesos que puede realizar son almacenes con es_proceso."""
+    """Equipo del taller. Los procesos que puede realizar son los del maestro Proceso."""
 
     codigo = models.CharField(
         'Código',
@@ -421,11 +421,10 @@ class Maquina(models.Model):
     descripcion = models.CharField('Descripción', max_length=250, blank=True)
     activo = models.BooleanField('Activo', default=True)
     procesos = models.ManyToManyField(
-        Almacen,
+        Proceso,
         through='MaquinaProceso',
         related_name='maquinas',
         verbose_name='Procesos',
-        limit_choices_to={'es_proceso': True},
     )
 
     class Meta:
@@ -454,7 +453,7 @@ class Maquina(models.Model):
 class MaquinaProceso(models.Model):
     maquina = models.ForeignKey(Maquina, on_delete=models.CASCADE, related_name='asignaciones')
     proceso = models.ForeignKey(
-        Almacen,
+        Proceso,
         verbose_name='Proceso',
         on_delete=models.PROTECT,
         related_name='usos_en_maquina',
@@ -466,11 +465,6 @@ class MaquinaProceso(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['maquina', 'proceso'], name='maquina_proceso_unico'),
         ]
-
-    def clean(self):
-        super().clean()
-        if self.proceso_id and not self.proceso.es_proceso:
-            raise ValidationError({'proceso': 'Solo puede asignar un almacén de proceso.'})
 
     def __str__(self):
         return f'{self.maquina.codigo} · {self.proceso.codigo}'

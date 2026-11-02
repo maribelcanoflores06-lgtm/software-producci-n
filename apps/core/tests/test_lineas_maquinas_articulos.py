@@ -7,7 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from apps.core.seed import seed_base, seed_ejemplo
-from apps.maestros.models import Almacen, Articulo, Maquina, MaquinaProceso, Receta, Ruta, TipoMaterial
+from apps.maestros.models import Articulo, Maquina, MaquinaProceso, Proceso, Receta, Ruta, TipoMaterial
 
 
 def entrar(username, password):
@@ -225,16 +225,20 @@ class TestMaquinas(TestCase):
     def test_semilla_menu_y_permisos(self):
         self.assertEqual(Maquina.objects.count(), 3)
         telar = Maquina.objects.get(codigo='MAQ-TELAR-01')
-        self.assertEqual(list(telar.procesos.values_list('codigo', flat=True)), ['PROC01'])
-        self.assertTrue(telar.procesos.get().es_proceso)
+        self.assertEqual(telar.procesos.model, Proceso)
+        self.assertEqual(list(telar.procesos.values_list('codigo', flat=True)), ['TEJ'])
+        jigger = Maquina.objects.get(codigo='MAQ-JIGGER-01')
+        self.assertEqual(set(jigger.procesos.values_list('nombre', flat=True)), {'Teñido', 'Blanqueo'})
         linea = Maquina.objects.get(codigo='MAQ-LINEA-01')
-        self.assertEqual(set(linea.procesos.values_list('codigo', flat=True)), {'PROC01', 'PROCCOS'})
+        self.assertEqual(set(linea.procesos.values_list('nombre', flat=True)), {'Acabado', 'Secado'})
 
         admin, _ok = entrar('maribel', 'demo-admin')
         inicio = admin.get(reverse('home'))
         self.assertContains(inicio, '/maestros/maquinas/')
-        self.assertContains(admin.get(reverse('mae.maquinas')), 'Telar circular 1')
-        self.assertContains(admin.get(reverse('mae.maquinas')), 'PROCCOS')
+        lista = admin.get(reverse('mae.maquinas'))
+        self.assertContains(lista, 'Telar circular 1')
+        self.assertContains(lista, 'TEN')
+        self.assertContains(lista, 'SEC')
 
         jefe, _ok = entrar('jefeprod', 'demo-prod')
         self.assertEqual(jefe.get(reverse('mae.maquinas')).status_code, 200)
@@ -242,6 +246,10 @@ class TestMaquinas(TestCase):
         edicion = jefe.get(reverse('mae.maquinas_editar', args=[telar.pk]))
         self.assertContains(edicion, '>Quitar</button>')
         self.assertContains(edicion, 'Editar máquina')
+        self.assertContains(edicion, 'TEJ - Tejido')
+        self.assertContains(edicion, 'TEN - Teñido')
+        self.assertContains(edicion, 'SEC - Secado')
+        self.assertNotContains(edicion, 'PROC01')
         self.assertNotContains(edicion, 'ALM01')
 
         consulta, _ok = entrar('consulta', 'demo-consulta')
@@ -250,10 +258,10 @@ class TestMaquinas(TestCase):
         almacen, _ok = entrar('almacenero', 'demo-alm')
         self.assertEqual(almacen.get(reverse('mae.maquinas')).status_code, 403)
 
-    def test_alta_rechaza_almacen_normal_y_proceso_repetido_sin_salir(self):
+    def test_alta_rechaza_proceso_inactivo_y_repetido_sin_salir(self):
         cliente, _ok = entrar('maribel', 'demo-admin')
-        proceso = Almacen.objects.get(codigo='PROC01')
-        normal = Almacen.objects.get(codigo='ALM01')
+        proceso = Proceso.objects.get(codigo='TEN')
+        inactivo = Proceso.objects.create(codigo='INACT', nombre='Fuera de uso', activo=False)
         base = {
             'codigo': 'maq-nueva',
             'nombre': 'Overlock',
@@ -277,13 +285,18 @@ class TestMaquinas(TestCase):
         self.assertContains(repetido, 'Overlock')
         self.assertFalse(Maquina.objects.filter(codigo='MAQ-NUEVA').exists())
 
+        pagina = cliente.get(reverse('mae.maquinas_nueva'))
+        self.assertContains(pagina, 'TEN - Teñido')
+        self.assertNotContains(pagina, 'INACT - Fuera de uso')
+        self.assertNotContains(pagina, 'PROC01')
+
         ajeno = cliente.post(reverse('mae.maquinas_nueva'), {
             **base,
             'procesos-TOTAL_FORMS': '1',
-            'procesos-0-proceso': normal.pk,
+            'procesos-0-proceso': inactivo.pk,
         })
         self.assertEqual(ajeno.status_code, 200)
-        self.assertContains(ajeno, 'Solo puede asignar un almacén de proceso')
+        self.assertContains(ajeno, 'Seleccione un proceso activo')
         self.assertFalse(Maquina.objects.filter(codigo='MAQ-NUEVA').exists())
 
         creado = cliente.post(reverse('mae.maquinas_nueva'), {
@@ -295,7 +308,8 @@ class TestMaquinas(TestCase):
         maquina = Maquina.objects.get(codigo='MAQ-NUEVA')
         self.assertEqual(maquina.nombre, 'Overlock')
         self.assertEqual(maquina.descripcion, 'Prueba')
-        self.assertEqual(list(maquina.procesos.values_list('codigo', flat=True)), ['PROC01'])
+        self.assertEqual(list(maquina.procesos.values_list('codigo', flat=True)), ['TEN'])
+        self.assertEqual(maquina.procesos.get()._meta.model_name, 'proceso')
 
     def test_quitar_proceso_se_aplica_al_guardar(self):
         cliente, _ok = entrar('maribel', 'demo-admin')
@@ -320,6 +334,27 @@ class TestMaquinas(TestCase):
         self.assertEqual(respuesta.status_code, 302)
         self.assertEqual(list(maquina.procesos.values_list('codigo', flat=True)), [asignaciones[1].proceso.codigo])
         self.assertEqual(MaquinaProceso.objects.filter(maquina=maquina).count(), 1)
+
+    def test_seed_carga_maquinas_aunque_ya_haya_maestros(self):
+        Maquina.objects.all().delete()
+        articulos = Articulo.objects.count()
+        procesos = Proceso.objects.count()
+        ok, mensaje = seed_ejemplo()
+        self.assertTrue(ok, mensaje)
+        self.assertIn('máquinas', mensaje)
+        self.assertEqual(Articulo.objects.count(), articulos)
+        self.assertGreaterEqual(procesos, 5)
+        self.assertEqual(Maquina.objects.count(), 3)
+        self.assertEqual(
+            set(Maquina.objects.get(codigo='MAQ-LINEA-01').procesos.values_list('nombre', flat=True)),
+            {'Acabado', 'Secado'},
+        )
+        self.assertTrue(Proceso.objects.filter(codigo='SEC', nombre='Secado').exists())
+        otra, mensaje_otra = seed_ejemplo()
+        self.assertFalse(otra)
+        self.assertIn('ya tiene maestros', mensaje_otra)
+        self.assertEqual(Maquina.objects.count(), 3)
+        self.assertEqual(Maquina.objects.get(codigo='MAQ-JIGGER-01').asignaciones.count(), 2)
 
 
 class TestFiltroArticulos(TestCase):

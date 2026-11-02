@@ -20,10 +20,10 @@ from apps.maestros.forms import (
     RutaLineasFormSet,
 )
 from apps.maestros.models import (
-    Almacen,
     Articulo,
     Maquina,
     MaquinaProceso,
+    Proceso,
     Receta,
     RecetaDetalle,
     Ruta,
@@ -242,9 +242,9 @@ class MaquinaFormView(PantallaMixin, TemplateView):
             'titulo': 'Editar máquina' if self.objeto else 'Nueva máquina',
             'url_lista': reverse('mae.maquinas'),
             'prefijo': 'procesos',
-            'sin_cabecera': not Almacen.objects.filter(es_proceso=True, activo=True).exists() and self.objeto is None,
-            'texto_vacio': 'No hay almacenes de proceso. Marque al menos un almacén como proceso antes de asignarlo.',
-            'ayuda': 'Cada línea es un almacén de proceso que esta máquina puede realizar.',
+            'sin_cabecera': not Proceso.objects.filter(activo=True).exists() and self.objeto is None,
+            'texto_vacio': 'No hay procesos activos. Cree uno en Maestros / Procesos antes de asignarlo.',
+            'ayuda': 'Cada línea es un proceso del maestro (el mismo de las rutas) que esta máquina puede realizar.',
         })
 
     def get(self, request, *args, **kwargs):

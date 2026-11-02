@@ -363,22 +363,23 @@ class MaquinaForm(CodigoForm):
         return nombre
 
 
-class CampoAlmacenProceso(forms.ModelChoiceField):
-    """Acepta el id publicado para poder explicar si no es un almacén de proceso."""
+class CampoProcesoMaquina(forms.ModelChoiceField):
+    """Muestra código - nombre y solo acepta procesos activos del maestro."""
+
+    def label_from_instance(self, obj):
+        return f'{obj.codigo} - {obj.nombre}'
 
     def to_python(self, value):
         if value in self.empty_values:
             return None
         try:
-            almacen = Almacen.objects.get(pk=value)
-        except (Almacen.DoesNotExist, ValueError, TypeError):
-            raise forms.ValidationError('Seleccione un almacén de proceso válido.')
-        if not almacen.es_proceso:
-            raise forms.ValidationError('Solo puede asignar un almacén de proceso.')
+            proceso = Proceso.objects.get(pk=value)
+        except (Proceso.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError('Seleccione un proceso válido.')
         permitido = getattr(self, 'inactivo_permitido', None)
-        if not almacen.activo and almacen.pk != permitido:
-            raise forms.ValidationError('El almacén de proceso no está activo.')
-        return almacen
+        if not proceso.activo and proceso.pk != permitido:
+            raise forms.ValidationError('Seleccione un proceso activo.')
+        return proceso
 
 
 class MaquinaLineaForm(forms.ModelForm):
@@ -390,8 +391,8 @@ class MaquinaLineaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         actual = self.instance.proceso_id if self.instance.pk else None
-        qs = Almacen.objects.filter(es_proceso=True).filter(Q(activo=True) | Q(pk=actual))
-        campo = CampoAlmacenProceso(queryset=qs.order_by('codigo'), label='Proceso', empty_label='—', required=False)
+        qs = Proceso.objects.filter(Q(activo=True) | Q(pk=actual))
+        campo = CampoProcesoMaquina(queryset=qs.order_by('codigo'), label='Proceso', empty_label='—', required=False)
         campo.inactivo_permitido = actual
         self.fields['proceso'] = campo
 
@@ -412,8 +413,8 @@ class MaquinaLineasFormSet(BaseInlineFormSet):
             proceso = data.get('proceso')
             if proceso is None:
                 continue
-            if not proceso.es_proceso:
-                raise ErrorModelo('Solo puede asignar un almacén de proceso.')
+            if not proceso.activo and proceso.pk != getattr(form.instance, 'proceso_id', None):
+                raise ErrorModelo('Seleccione un proceso activo.')
             if proceso.pk in vistos:
                 raise ErrorModelo(f'El proceso {proceso.codigo} está repetido.')
             vistos.add(proceso.pk)
