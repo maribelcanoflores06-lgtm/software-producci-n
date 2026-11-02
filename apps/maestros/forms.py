@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError as ErrorModelo
 from django.db.models import Q
-from django.forms.models import BaseInlineFormSet
+from django.forms.models import BaseInlineFormSet, ModelChoiceIterator
 
 from apps.almacen.models import Movimiento, MovimientoDetalle
 from apps.core.codigos import MENSAJE_ALMACEN, MENSAJE_CODIGO, PATRON_ALMACEN, PATRON_CODIGO, normalizar_codigo
@@ -12,6 +12,8 @@ from apps.maestros.models import (
     Anio,
     Articulo,
     Cliente,
+    Maquina,
+    MaquinaProceso,
     Proceso,
     Proveedor,
     Receta,
@@ -200,6 +202,17 @@ class RecetaForm(DenseForm):
         return articulo
 
 
+class IteradorSinProducto(ModelChoiceIterator):
+    """Oculta el producto terminado de la receta sin sacarlo del queryset."""
+
+    def __iter__(self):
+        excluido = getattr(self.field, 'producto_excluido', None)
+        for valor, etiqueta in super().__iter__():
+            if excluido is not None and str(valor) == str(excluido):
+                continue
+            yield valor, etiqueta
+
+
 class RecetaLineaForm(forms.ModelForm):
     cantidad_por_lote = MontoField(label='Cantidad por lote')
 
@@ -208,13 +221,17 @@ class RecetaLineaForm(forms.ModelForm):
         fields = ['articulo_insumo', 'cantidad_por_lote']
         labels = {'articulo_insumo': 'Insumo'}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, pt_id=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.pt_id = pt_id
         qs = Articulo.objects.filter(activo=True)
         if self.instance.pk and self.instance.articulo_insumo_id:
             qs = Articulo.objects.filter(Q(activo=True) | Q(pk=self.instance.articulo_insumo_id))
-        self.fields['articulo_insumo'].queryset = qs.order_by('codigo')
-        self.fields['articulo_insumo'].empty_label = '—'
+        campo = self.fields['articulo_insumo']
+        campo.iterator = IteradorSinProducto
+        campo.producto_excluido = pt_id
+        campo.empty_label = '—'
+        campo.queryset = qs.order_by('codigo')
 
     def clean_cantidad_por_lote(self):
         valor = self.cleaned_data.get('cantidad_por_lote')
@@ -224,9 +241,28 @@ class RecetaLineaForm(forms.ModelForm):
             raise forms.ValidationError('La cantidad debe ser mayor que cero.')
         return q4(valor)
 
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('DELETE'):
+            return cleaned
+        insumo = cleaned.get('articulo_insumo')
+        if insumo is not None and self.pt_id and insumo.pk == int(self.pt_id):
+            self.add_error(
+                'articulo_insumo',
+                'El insumo no puede ser el mismo producto terminado de la receta.',
+            )
+        return cleaned
+
 
 class RecetaLineasFormSet(BaseInlineFormSet):
-    pt_id = None
+    def __init__(self, *args, pt_id=None, **kwargs):
+        self.pt_id = pt_id
+        super().__init__(*args, **kwargs)
+
+    def get_form_kwargs(self, index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs['pt_id'] = self.pt_id
+        return kwargs
 
     def clean(self):
         super().clean()
@@ -310,3 +346,78 @@ class RutaLineasFormSet(BaseInlineFormSet):
             completas += 1
         if completas < 1:
             raise ErrorModelo('La ruta debe tener al menos un proceso.')
+
+
+class MaquinaForm(CodigoForm):
+    class Meta:
+        model = Maquina
+        fields = ['codigo', 'nombre', 'descripcion', 'activo']
+        help_texts = {
+            'descripcion': 'Opcional. Sirve para distinguir el equipo en el taller.',
+        }
+
+    def clean_nombre(self):
+        nombre = (self.cleaned_data.get('nombre') or '').strip()
+        if not nombre:
+            raise forms.ValidationError('El nombre es obligatorio.')
+        return nombre
+
+
+class CampoProcesoMaquina(forms.ModelChoiceField):
+    """Muestra código - nombre y solo acepta procesos activos del maestro."""
+
+    def label_from_instance(self, obj):
+        return f'{obj.codigo} - {obj.nombre}'
+
+    def to_python(self, value):
+        if value in self.empty_values:
+            return None
+        try:
+            proceso = Proceso.objects.get(pk=value)
+        except (Proceso.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError('Seleccione un proceso válido.')
+        permitido = getattr(self, 'inactivo_permitido', None)
+        if not proceso.activo and proceso.pk != permitido:
+            raise forms.ValidationError('Seleccione un proceso activo.')
+        return proceso
+
+
+class MaquinaLineaForm(forms.ModelForm):
+    class Meta:
+        model = MaquinaProceso
+        fields = ['proceso']
+        labels = {'proceso': 'Proceso'}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        actual = self.instance.proceso_id if self.instance.pk else None
+        qs = Proceso.objects.filter(Q(activo=True) | Q(pk=actual))
+        campo = CampoProcesoMaquina(queryset=qs.order_by('codigo'), label='Proceso', empty_label='—', required=False)
+        campo.inactivo_permitido = actual
+        self.fields['proceso'] = campo
+
+
+class MaquinaLineasFormSet(BaseInlineFormSet):
+    def validate_unique(self):
+        # El mensaje genérico de Django no dice cuál proceso se repitió.
+        return
+
+    def clean(self):
+        super().clean()
+        vistos = set()
+        completas = 0
+        for form in self.forms:
+            data = getattr(form, 'cleaned_data', None) or {}
+            if not data or data.get('DELETE'):
+                continue
+            proceso = data.get('proceso')
+            if proceso is None:
+                continue
+            if not proceso.activo and proceso.pk != getattr(form.instance, 'proceso_id', None):
+                raise ErrorModelo('Seleccione un proceso activo.')
+            if proceso.pk in vistos:
+                raise ErrorModelo(f'El proceso {proceso.codigo} está repetido.')
+            vistos.add(proceso.pk)
+            completas += 1
+        if completas < 1 and not any(self.errors):
+            raise ErrorModelo('La máquina debe tener al menos un proceso.')

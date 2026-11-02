@@ -32,6 +32,7 @@ from apps.maestros.models import (
     CorrelativoOp,
     Proceso,
     Proveedor,
+    Maquina,
     Receta,
     Ruta,
     SaldoInicial,
@@ -86,6 +87,10 @@ class CatalogoListView(PantallaMixin, ListView):
             for campo in self.search_fields:
                 filtro |= Q(**{f'{campo}__icontains': texto})
             qs = qs.filter(filtro)
+        if self.mostrar_tipos:
+            tipo = self.request.GET.get('tipo', '').strip().upper()
+            if tipo and tipo != 'TODOS':
+                qs = qs.filter(tipo_material__codigo=tipo)
         return qs
 
     def es_ejemplo(self, obj):
@@ -105,16 +110,31 @@ class CatalogoListView(PantallaMixin, ListView):
         if self.enlace_pantallas and puede(self.request.user, 'admin.rol_pantallas'):
             for fila in filas:
                 fila['pantallas'] = reverse('admin.rol_pantallas_editar', args=[fila['pk']])
+        tipo = ''
+        if self.mostrar_tipos:
+            tipo = self.request.GET.get('tipo', '').strip().upper()
+            if tipo == 'TODOS':
+                tipo = ''
+        pagina = ctx.get('page_obj')
         ctx.update({
             'filas': filas,
             'encabezados': [titulo for titulo, _ in self.columnas],
             'q': self.request.GET.get('q', '').strip(),
+            'tipo_seleccionado': tipo,
             'titulo': self.titulo,
             'url_crear': reverse(self.url_crear) if self.url_crear else None,
             'mostrar_tipos': self.mostrar_tipos,
             'tipos': _tipos_en_orden_de_spec() if self.mostrar_tipos else None,
+            'url_anterior': _enlace_pagina(self.request, pagina.previous_page_number()) if pagina and pagina.has_previous() else '',
+            'url_siguiente': _enlace_pagina(self.request, pagina.next_page_number()) if pagina and pagina.has_next() else '',
         })
         return ctx
+
+
+def _enlace_pagina(request, numero):
+    params = request.GET.copy()
+    params['page'] = str(numero)
+    return '?' + params.urlencode()
 
 
 class _FormularioMixin(PantallaMixin):
@@ -329,6 +349,28 @@ class RecetaListView(CatalogoListView):
 
     def es_ejemplo(self, obj):
         return obj.articulo_pt.codigo in CODIGOS_EJEMPLO
+
+
+class MaquinaListView(CatalogoListView):
+    model = Maquina
+    pantalla_codigo = 'mae.maquinas'
+    titulo = 'Máquinas'
+    search_fields = ('codigo', 'nombre', 'descripcion')
+    ordering = ('codigo',)
+    prefetch_related_fields = ('asignaciones__proceso',)
+    url_crear = 'mae.maquinas_nueva'
+    url_editar = 'mae.maquinas_editar'
+    columnas = [
+        ('Código', lambda o: o.codigo),
+        ('Nombre', lambda o: o.nombre),
+        ('Procesos', lambda o: _resumen_maquina(o)),
+        ('Activo', lambda o: si_no(o.activo)),
+    ]
+
+
+def _resumen_maquina(maquina):
+    codigos = [fila.proceso.codigo for fila in maquina.asignaciones.all()]
+    return ', '.join(codigos) if codigos else '—'
 
 
 class RutaListView(CatalogoListView):

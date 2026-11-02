@@ -7,20 +7,31 @@
     <a class="btn btn-primary" href="{{ url_crear }}">Nuevo</a>
     {% endif %}
   </div>
+  <form method="get" class="form-row">
+    {% if mostrar_tipos and tipos %}
+    <div class="field">
+      <label for="tipo">Tipo de artículo</label>
+      <select id="tipo" name="tipo" onchange="this.form.submit()">
+        <option value=""{% if not tipo_seleccionado %} selected{% endif %}>Todos</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo.codigo }}"{% if tipo_seleccionado == tipo.codigo %} selected{% endif %}>{{ tipo.codigo }} · {{ tipo.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="field grow">
+      <label for="q">Buscar</label>
+      <input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, nombre o descripción">
+    </div>
+    <button class="btn" type="submit">Buscar</button>
+    {% if q or tipo_seleccionado %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
+  </form>
   {% if mostrar_tipos and tipos %}
   <p class="hint">Tipos de material fijos, solo consulta:
     {% for tipo in tipos %}<strong>{{ tipo.codigo }}</strong> {{ tipo.nombre }}{% if not forloop.last %} · {% endif %}{% endfor %}
   </p>
   {% endif %}
   <p class="hint">Los códigos de la demo textil aparecen con la etiqueta EJEMPLO.</p>
-  <form method="get" class="form-row">
-    <div class="field grow">
-      <label for="q">Buscar</label>
-      <input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, nombre o descripción">
-    </div>
-    <button class="btn" type="submit">Buscar</button>
-    {% if q %}<a class="btn" href="{{ request.path }}">Limpiar</a>{% endif %}
-  </form>
 </div>
 <div class="grid-wrap">
   <table class="grid">
@@ -60,10 +71,10 @@
   {% if page_obj.has_other_pages %}
   <div class="btns">
     {% if page_obj.has_previous %}
-    <a class="btn" href="?q={{ q|urlencode }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+    <a class="btn" href="{{ url_anterior }}">Anterior</a>
     {% endif %}
     {% if page_obj.has_next %}
-    <a class="btn" href="?q={{ q|urlencode }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+    <a class="btn" href="{{ url_siguiente }}">Siguiente</a>
     {% endif %}
   </div>
   {% endif %}

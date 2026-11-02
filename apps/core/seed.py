@@ -20,6 +20,8 @@ from apps.maestros.models import (
     CorrelativoOp,
     Proceso,
     Proveedor,
+    Maquina,
+    MaquinaProceso,
     Receta,
     RecetaDetalle,
     Ruta,
@@ -27,6 +29,24 @@ from apps.maestros.models import (
     TipoMaterial,
     Trabajador,
 )
+
+PROCESOS_EJEMPLO = [
+    ('TEJ', 'Tejido'),
+    ('TEN', 'Teñido'),
+    ('COR', 'Corte'),
+    ('COS', 'Costura'),
+    ('ACA', 'Acabado'),
+    ('SEC', 'Secado'),
+    ('BLA', 'Blanqueo'),
+    ('REV', 'Revisado'),
+]
+
+MAQUINAS_EJEMPLO = [
+    ('MAQ-TELAR-01', 'Telar circular 1', 'Telar de punto para el polo piqué.', ('TEJ',)),
+    ('MAQ-JIGGER-01', 'Jigger de teñido', 'Teñido y blanqueo de tela jersey.', ('TEN', 'BLA')),
+    ('MAQ-LINEA-01', 'Línea polo', 'Acabado y secado del polo.', ('ACA', 'SEC')),
+]
+
 
 SALDOS_EJEMPLO = [
     ('ALM01', 'MP-HIL-20/1', Decimal('100'), Decimal('2')),
@@ -114,19 +134,26 @@ def catalogo_vacio():
 
 
 def seed_ejemplo():
-    if not catalogo_vacio():
-        return False, 'La base ya tiene maestros. No se cargaron datos de ejemplo.'
-    if not Usuario.objects.filter(username='maribel', is_active=True).exists():
+    if catalogo_vacio() and not Usuario.objects.filter(username='maribel', is_active=True).exists():
         return False, 'Falta el usuario maribel. Ejecute primero: python manage.py seed_demo --solo-base'
+    cargo_catalogo = False
+    if catalogo_vacio():
+        with transaction.atomic():
+            asegurar_tipos()
+            anio = asegurar_anio()
+            _crear_maestros_ejemplo(anio)
+            _crear_saldos_ejemplo(anio)
+        cargo_catalogo = True
     with transaction.atomic():
-        asegurar_tipos()
-        anio = asegurar_anio()
-        _crear_maestros_ejemplo(anio)
-        _crear_saldos_ejemplo(anio)
-    return True, (
-        'Se cargaron los datos de ejemplo del taller textil: almacenes, artículos, '
-        'receta, ruta, terceros y saldos iniciales.'
-    )
+        maquinas_nuevas = _asegurar_maquinas_ejemplo()
+    if cargo_catalogo:
+        return True, (
+            'Se cargaron los datos de ejemplo del taller textil: almacenes, artículos, '
+            'receta, ruta, máquinas, terceros y saldos iniciales.'
+        )
+    if maquinas_nuevas:
+        return True, 'Se agregaron las máquinas de ejemplo.'
+    return False, 'La base ya tiene maestros. No se cargaron datos de ejemplo.'
 
 
 def _crear_maestros_ejemplo(anio):
@@ -169,19 +196,12 @@ def _crear_maestros_ejemplo(anio):
     ):
         RecetaDetalle.objects.create(receta=receta, articulo_insumo=art[codigo], cantidad_por_lote=cantidad)
 
-    procesos = [
-        ('TEJ', 'Tejido'),
-        ('TEN', 'Teñido'),
-        ('COR', 'Corte'),
-        ('COS', 'Costura'),
-        ('ACA', 'Acabado'),
-    ]
-    proc = {}
-    for codigo, nombre in procesos:
-        proc[codigo] = Proceso.objects.create(codigo=codigo, nombre=nombre, activo=True)
+    for codigo, nombre in PROCESOS_EJEMPLO:
+        Proceso.objects.create(codigo=codigo, nombre=nombre, activo=True)
     ruta = Ruta.objects.create(codigo='RUTA-POLO-01', nombre='Polo básico', activo=True)
+    procesos_ruta = {p.codigo: p for p in Proceso.objects.filter(codigo__in=('TEJ', 'TEN', 'COR', 'COS', 'ACA'))}
     for secuencia, codigo in enumerate(('TEJ', 'TEN', 'COR', 'COS', 'ACA'), start=1):
-        RutaProceso.objects.create(ruta=ruta, proceso=proc[codigo], secuencia=secuencia)
+        RutaProceso.objects.create(ruta=ruta, proceso=procesos_ruta[codigo], secuencia=secuencia)
 
     Cliente.objects.create(
         codigo='CLI-001',
@@ -215,3 +235,26 @@ def _crear_saldos_ejemplo(anio):
             costo_unitario=costo,
             usuario=usuario,
         )
+
+
+def _asegurar_maquinas_ejemplo():
+    """Crea las máquinas de ejemplo si no existen. No duplica ni pisa asignaciones ya hechas."""
+    procesos = {}
+    for codigo, nombre in PROCESOS_EJEMPLO:
+        proceso, _creado = Proceso.objects.get_or_create(
+            codigo=codigo,
+            defaults={'nombre': nombre, 'activo': True},
+        )
+        procesos[codigo] = proceso
+    nuevas = False
+    for codigo, nombre, descripcion, codigos_proceso in MAQUINAS_EJEMPLO:
+        maquina, creada = Maquina.objects.get_or_create(
+            codigo=codigo,
+            defaults={'nombre': nombre, 'descripcion': descripcion, 'activo': True},
+        )
+        if not creada and maquina.asignaciones.exists():
+            continue
+        for codigo_proceso in codigos_proceso:
+            MaquinaProceso.objects.get_or_create(maquina=maquina, proceso=procesos[codigo_proceso])
+        nuevas = True
+    return nuevas
